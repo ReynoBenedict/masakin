@@ -4,14 +4,15 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import com.example.masakin.ui.screens.LoginScreen
-import com.example.masakin.ui.screens.RegisterScreen
-import com.example.masakin.ui.navigation.OnboardingRoute
+import androidx.navigation.navOptions
+import com.example.masakin.ui.screens.*
 
 object Routes {
     const val ONBOARDING = "onboarding"
     const val LOGIN = "login"
     const val REGISTER = "register"
+    const val HOME = "home"
+    const val CHATBOT = "chatbot"
 }
 
 @Composable
@@ -23,17 +24,21 @@ fun MasakinNavGraph(navController: NavHostController) {
         composable(Routes.ONBOARDING) {
             OnboardingRoute(
                 onFinish = {
-                    navController.navigate(Routes.LOGIN) {
+                    navController.navigate(Routes.LOGIN, navOptions {
                         popUpTo(Routes.ONBOARDING) { inclusive = true }
-                        launchSingleTop = true
-                    }
+                    })
                 }
             )
         }
 
         composable(Routes.LOGIN) {
             LoginScreen(
-                onLoginClick = { _, _ -> /* TODO: navigate to Home */ },
+                // ⬇️ langsung navigasi ke HOME, abaikan kredensial
+                onLoginClick = { _, _ ->
+                    navController.navigate(Routes.HOME) {
+                        popUpTo(Routes.LOGIN) { inclusive = true } // hapus dari back stack
+                    }
+                },
                 onForgotPasswordClick = { /* TODO */ },
                 onRegisterClick = { navController.navigate(Routes.REGISTER) },
                 onFacebookClick = { /* TODO */ },
@@ -44,11 +49,19 @@ fun MasakinNavGraph(navController: NavHostController) {
 
         composable(Routes.REGISTER) {
             RegisterScreen(
-                onRegisterClick = { _, _, _ ->
-                    navController.popBackStack() // selesai daftar -> balik ke Login
-                },
+                onRegisterClick = { _, _, _ -> navController.popBackStack() },
                 onBackToLoginClick = { navController.popBackStack() }
             )
+        }
+
+        composable(Routes.HOME) {
+            HomeScreen(
+                onOpenChatbot = { navController.navigate(Routes.CHATBOT) }
+            )
+        }
+
+        composable(Routes.CHATBOT) {
+            ChatbotScreen(onBack = { navController.popBackStack() })
         }
     }
 }
