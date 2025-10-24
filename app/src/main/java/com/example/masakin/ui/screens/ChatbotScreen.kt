@@ -27,8 +27,8 @@ import com.example.masakin.ui.theme.Grey40
 import com.example.masakin.ui.theme.Red50
 
 // ====== HARDCODED API KEY (dev only) ======
-private const val API_KEY =
-    
+//private const val API_KEY =
+//    "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" // ganti dengan sk-proj-... milikmu
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -43,7 +43,7 @@ fun ChatbotScreen(onBack: () -> Unit = {}) {
             CenterAlignedTopAppBar(
                 title = { Text("ChatBot", color = Red50, fontSize = 22.sp) },
                 navigationIcon = {
-                    IconButton(onClick = onBack) { Icon(Icons.Filled.ArrowBack, null, tint = Red50) }
+                    IconButton(onClick = onBack) { Icon(Icons.Filled.ArrowBack, null, ) }
                 }
             )
         }
@@ -99,7 +99,7 @@ fun ChatbotScreen(onBack: () -> Unit = {}) {
                     onClick = {
                         val text = input.trim()
                         if (text.isNotEmpty()) {
-                            vm.send(text, API_KEY) // ✅ tanpa BuildConfig
+//                            vm.send(text, API_KEY) // ✅ tanpa BuildConfig
                             input = ""
                         }
                     },
