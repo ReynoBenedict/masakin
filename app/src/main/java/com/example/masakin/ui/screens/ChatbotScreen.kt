@@ -28,7 +28,7 @@ import com.example.masakin.ui.theme.Red50
 
 // ====== HARDCODED API KEY (dev only) ======
 private const val API_KEY =
-    "" // ganti dengan sk-proj-... milikmu
+    
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
