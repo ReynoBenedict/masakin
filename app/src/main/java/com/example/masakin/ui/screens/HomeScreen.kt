@@ -11,7 +11,8 @@ import androidx.compose.ui.unit.dp
 
 @Composable
 fun HomeScreen(
-    onOpenChatbot: () -> Unit = {}
+    onOpenChatbot: () -> Unit = {},
+    onOpenRecipe: () -> Unit = {}
 ) {
     Column(
         modifier = Modifier
@@ -20,14 +21,24 @@ fun HomeScreen(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        Spacer(Modifier.height(12.dp))
         FilledTonalButton(
             onClick = onOpenChatbot,
             modifier = Modifier
                 .fillMaxWidth()
-                .height(52.dp),
+                .height(52.dp)
         ) {
             Text("Buka ChatBot", style = MaterialTheme.typography.bodySmall)
+        }
+
+        Spacer(Modifier.height(16.dp))
+
+        FilledTonalButton(
+            onClick = onOpenRecipe,
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(52.dp)
+        ) {
+            Text("Buka Halaman Resep", style = MaterialTheme.typography.bodySmall)
         }
     }
 }

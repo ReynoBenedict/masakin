@@ -6,6 +6,8 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navOptions
 import com.example.masakin.ui.screens.*
+import com.example.masakin.ui.recipe.RecipeViewModel
+import com.example.masakin.ui.screens.RecipeRoute
 
 object Routes {
     const val ONBOARDING = "onboarding"
@@ -13,6 +15,7 @@ object Routes {
     const val REGISTER = "register"
     const val HOME = "home"
     const val CHATBOT = "chatbot"
+    const val RECIPE = "recipe"
 }
 
 @Composable
@@ -33,10 +36,9 @@ fun MasakinNavGraph(navController: NavHostController) {
 
         composable(Routes.LOGIN) {
             LoginScreen(
-                // ⬇️ langsung navigasi ke HOME, abaikan kredensial
                 onLoginClick = { _, _ ->
                     navController.navigate(Routes.HOME) {
-                        popUpTo(Routes.LOGIN) { inclusive = true } // hapus dari back stack
+                        popUpTo(Routes.LOGIN) { inclusive = true }
                     }
                 },
                 onForgotPasswordClick = { /* TODO */ },
@@ -56,12 +58,21 @@ fun MasakinNavGraph(navController: NavHostController) {
 
         composable(Routes.HOME) {
             HomeScreen(
-                onOpenChatbot = { navController.navigate(Routes.CHATBOT) }
+                onOpenChatbot = { navController.navigate(Routes.CHATBOT) },
+                onOpenRecipe = { navController.navigate(Routes.RECIPE) }
             )
         }
 
         composable(Routes.CHATBOT) {
             ChatbotScreen(onBack = { navController.popBackStack() })
+        }
+
+        composable(Routes.RECIPE) {
+            val vm = RecipeViewModel()
+            RecipeRoute(
+                viewModel = vm,
+                onBack = { navController.popBackStack() }
+            )
         }
     }
 }
