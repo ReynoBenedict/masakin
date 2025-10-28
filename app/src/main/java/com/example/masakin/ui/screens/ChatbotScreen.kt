@@ -28,7 +28,7 @@ import com.example.masakin.ui.theme.Red50
 
 // ====== HARDCODED API KEY (dev only) ======
 private const val API_KEY =
-    ""
+    "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"
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -90,7 +90,7 @@ fun ChatbotScreen(onBack: () -> Unit = {}) {
                     onClick = {
                         val text = input.trim()
                         if (text.isNotEmpty()) {
-//                            vm.send(text, API_KEY)
+                            vm.send(text, API_KEY)
                             input = ""
                         }
                     },

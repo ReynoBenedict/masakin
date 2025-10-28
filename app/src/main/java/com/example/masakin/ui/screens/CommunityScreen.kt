@@ -224,7 +224,7 @@ private fun PostCard(
                 )
                 Spacer(Modifier.width(5.dp))
                 Column(Modifier.weight(1f)) {
-                    Text(post.userName, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
+                    Text(post.userName, style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.SemiBold)
                     Text("@${post.userHandle} • ${post.time}", style = MaterialTheme.typography.bodySmall, color = Color.Gray)
                 }
                 IconButton(onClick = { /* more */ }) {
@@ -236,7 +236,7 @@ private fun PostCard(
 
             Text(
                 text = post.content,
-                style = MaterialTheme.typography.bodyMedium,
+                style = MaterialTheme.typography.bodySmall,
                 maxLines = 6,
                 overflow = TextOverflow.Ellipsis
             )
