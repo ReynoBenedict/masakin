@@ -17,6 +17,8 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.masakin.ui.recipe.*
 import androidx.compose.material.icons.Icons
+import androidx.compose.ui.tooling.preview.Preview
+
 
 @Composable
 fun RecipeRoute(

@@ -1,6 +1,7 @@
 package com.example.masakin.ui.navigation
 
 import androidx.compose.runtime.*
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.viewmodel.compose.viewModel
 import kotlinx.coroutines.launch
 import com.example.masakin.viewmodel.OnboardingViewModel

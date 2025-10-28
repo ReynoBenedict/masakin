@@ -21,8 +21,10 @@ import androidx.compose.ui.unit.sp
 import com.example.masakin.R
 import com.example.masakin.viewmodel.OnboardingUiState
 import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.ui.tooling.preview.Preview
 
 @OptIn(ExperimentalAnimationApi::class)
+@Preview(showBackground = true)
 @Composable
 fun OnboardingScreen(
     ui: OnboardingUiState,
@@ -132,7 +134,7 @@ fun OnboardingScreen(
                 }
             }
 
-            Spacer(Modifier.height(24.dp))
+            Spacer(Modifier.height(60.dp))
 
             // ======== TOMBOL ========
             Row(

@@ -31,6 +31,9 @@ import com.example.masakin.ui.components.SocialLoginButton
 import com.example.masakin.ui.theme.Grey40
 import com.example.masakin.ui.theme.Red50
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.ui.tooling.preview.Preview
+
+@Preview(showBackground = true)
 
 @Composable
 fun LoginScreen(
