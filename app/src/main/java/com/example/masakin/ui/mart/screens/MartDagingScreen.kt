@@ -55,7 +55,7 @@ fun MartHeader(searchText: String, onSearchChange: (String) -> Unit) {
                 contentDescription = "Back",
                 modifier = Modifier
                     .size(18.dp)
-                    .clickable { /* back */ }
+                    .clickable { }
             )
             Spacer(Modifier.width(6.dp))
             Column {
@@ -73,13 +73,12 @@ fun MartHeader(searchText: String, onSearchChange: (String) -> Unit) {
                 contentDescription = "Notification",
                 modifier = Modifier
                     .size(22.dp)
-                    .clickable { /* notif */ }
+                    .clickable {  }
             )
         }
 
         Spacer(Modifier.height(10.dp))
 
-        // 🔍 Custom Search Field (tanpa icon)
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -132,7 +131,7 @@ fun MenuIcon(icon: Int) {
         contentDescription = null,
         modifier = Modifier
             .size(55.dp)
-            .clickable { /* action */ }
+            .clickable { }
     )
 }
 
@@ -193,15 +192,15 @@ fun MartProductSection() {
         )
         Box(
             modifier = Modifier
-                .size(48.dp) // lebih besar
+                .size(48.dp)
                 .clip(RoundedCornerShape(8.dp))
-                .clickable { /* open filter */ },
+                .clickable {},
             contentAlignment = Alignment.Center
         ) {
             Image(
                 painter = painterResource(R.drawable.mart_ic_filter),
                 contentDescription = "Filter",
-                modifier = Modifier.size(28.dp) // ukuran icon diperbesar
+                modifier = Modifier.size(28.dp)
             )
         }
     }
