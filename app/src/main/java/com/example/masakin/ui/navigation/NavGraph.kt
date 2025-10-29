@@ -6,6 +6,8 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navOptions
 import com.example.masakin.ui.community.CommunityRoute
+//import com.example.masakin.ui.mart.screens.MartHomeScreen
+import com.example.masakin.ui.mart.screens.MartDagingScreen
 import com.example.masakin.ui.screens.*
 import com.example.masakin.ui.recipe.RecipeViewModel
 import com.example.masakin.ui.screens.RecipeRoute
@@ -18,6 +20,7 @@ object Routes {
     const val CHATBOT = "chatbot"
     const val RECIPE = "recipe"
     const val COMMUNITY = "community"
+    const val MART =  "mart"
 
 }
 
@@ -63,9 +66,14 @@ fun MasakinNavGraph(navController: NavHostController) {
             HomeScreen(
                 onOpenChatbot = { navController.navigate(Routes.CHATBOT) },
                 onOpenRecipe = { navController.navigate(Routes.RECIPE) },
-                onOpenCommunity = { navController.navigate(Routes.COMMUNITY) }
-                // <- ini
+                onOpenCommunity = { navController.navigate(Routes.COMMUNITY) },
+                onOpenMart = {navController.navigate(Routes.MART)}
+
             )
+        }
+
+        composable(Routes.MART) {
+            MartDagingScreen()
         }
 
         composable(Routes.CHATBOT) {

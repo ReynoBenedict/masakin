@@ -14,7 +14,8 @@ import androidx.compose.ui.unit.dp
 fun HomeScreen(
     onOpenChatbot: () -> Unit = {},
     onOpenRecipe: () -> Unit = {},
-    onOpenCommunity: () -> Unit = {}
+    onOpenCommunity: () -> Unit = {},
+    onOpenMart: () -> Unit = {}
 ) {
     Column(
         modifier = Modifier
@@ -47,5 +48,15 @@ fun HomeScreen(
         ) {
             Text("Buka Halaman Komunitas", style = MaterialTheme.typography.bodySmall)
         }
+
+        Spacer (Modifier.height(16.dp))
+        FilledTonalButton(
+            onClick = onOpenMart,
+            modifier = Modifier.fillMaxWidth().height(52.dp)
+        ) {
+            Text("Buka Halaman Mart", style = MaterialTheme.typography.bodySmall)
+        }
     }
 }
+
+
