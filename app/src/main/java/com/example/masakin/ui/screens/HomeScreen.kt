@@ -9,13 +9,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+
 @Preview(showBackground = true)
 @Composable
 fun HomeScreen(
     onOpenChatbot: () -> Unit = {},
     onOpenRecipe: () -> Unit = {},
     onOpenCommunity: () -> Unit = {},
-    onOpenMart: () -> Unit = {}
+    onOpenMart: () -> Unit = {},
+    onOpenConsultation: () -> Unit = {}   // <- tambahan callback konsultasi
 ) {
     Column(
         modifier = Modifier
@@ -43,20 +45,30 @@ fun HomeScreen(
         Spacer(Modifier.height(16.dp))
 
         FilledTonalButton(
-            onClick = onOpenCommunity, // <- fixed
+            onClick = onOpenCommunity,
             modifier = Modifier.fillMaxWidth().height(52.dp)
         ) {
             Text("Buka Halaman Komunitas", style = MaterialTheme.typography.bodySmall)
         }
 
-        Spacer (Modifier.height(16.dp))
+        Spacer(Modifier.height(16.dp))
+
         FilledTonalButton(
             onClick = onOpenMart,
             modifier = Modifier.fillMaxWidth().height(52.dp)
         ) {
             Text("Buka Halaman Mart", style = MaterialTheme.typography.bodySmall)
         }
+
+        Spacer(Modifier.height(16.dp))
+
+        // ====== TOMBOL BARU: Konsultasi ======
+        FilledTonalButton(
+            onClick = onOpenConsultation,
+            modifier = Modifier.fillMaxWidth().height(52.dp)
+        ) {
+            Text("Buka Halaman Konsultasi", style = MaterialTheme.typography.bodySmall)
+        }
+        // =====================================
     }
 }
-
-

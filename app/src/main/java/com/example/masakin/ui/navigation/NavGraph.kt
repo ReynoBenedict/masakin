@@ -6,9 +6,9 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navOptions
 import com.example.masakin.ui.community.CommunityRoute
-//import com.example.masakin.ui.mart.screens.MartHomeScreen
+// import com.example.masakin.ui.mart.screens.MartHomeScreen
 import com.example.masakin.ui.mart.screens.MartDagingScreen
-import com.example.masakin.ui.screens.*
+import com.example.masakin.ui.screens.* // HomeScreen, LoginScreen, RegisterScreen, ChatbotScreen, ConsultationScreen, etc.
 import com.example.masakin.ui.recipe.RecipeViewModel
 import com.example.masakin.ui.screens.RecipeRoute
 
@@ -20,8 +20,10 @@ object Routes {
     const val CHATBOT = "chatbot"
     const val RECIPE = "recipe"
     const val COMMUNITY = "community"
-    const val MART =  "mart"
+    const val MART = "mart"
 
+    // ===== NEW: route konsultasi =====
+    const val CONSULTATION = "consultation"
 }
 
 @Composable
@@ -67,8 +69,9 @@ fun MasakinNavGraph(navController: NavHostController) {
                 onOpenChatbot = { navController.navigate(Routes.CHATBOT) },
                 onOpenRecipe = { navController.navigate(Routes.RECIPE) },
                 onOpenCommunity = { navController.navigate(Routes.COMMUNITY) },
-                onOpenMart = {navController.navigate(Routes.MART)}
-
+                onOpenMart = { navController.navigate(Routes.MART) },
+                // ===== NEW: navigasi ke konsultasi =====
+                onOpenConsultation = { navController.navigate(Routes.CONSULTATION) }
             )
         }
 
@@ -87,11 +90,17 @@ fun MasakinNavGraph(navController: NavHostController) {
                 onBack = { navController.popBackStack() }
             )
         }
+
         composable(Routes.COMMUNITY) {
             CommunityRoute(
                 onBack = { navController.popBackStack() },
                 onCreatePost = { /* navigate to composer */ }
             )
+        }
+
+        // ===== NEW: halaman konsultasi =====
+        composable(Routes.CONSULTATION) {
+            ConsultationScreen(onBack = { navController.popBackStack() })
         }
     }
 }
