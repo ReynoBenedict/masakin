@@ -23,7 +23,7 @@ import androidx.compose.ui.unit.sp
 import com.example.masakin.R
 
 @Composable
-fun MartDagingScreen() {
+fun MartDagingScreen(onBack: () -> Unit = {}) {
     var selectedCategory by remember { mutableStateOf("Daging") }
     var searchText by remember { mutableStateOf("") }
 
@@ -33,7 +33,7 @@ fun MartDagingScreen() {
             .padding(horizontal = 16.dp)
     ) {
         Spacer(Modifier.height(24.dp))
-        MartHeader(searchText) { searchText = it }
+        MartHeader(searchText, onSearchChange = { searchText = it }, onBack = onBack)
         Spacer(Modifier.height(12.dp))
         MartMenuRow()
         Spacer(Modifier.height(8.dp))
@@ -44,18 +44,19 @@ fun MartDagingScreen() {
 }
 
 @Composable
-fun MartHeader(searchText: String, onSearchChange: (String) -> Unit) {
+fun MartHeader(searchText: String, onSearchChange: (String) -> Unit, onBack: () -> Unit) {
     Column {
         Row(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.fillMaxWidth()
         ) {
+
             Image(
                 painter = painterResource(R.drawable.mart_ic_location_red),
                 contentDescription = "Back",
                 modifier = Modifier
                     .size(18.dp)
-                    .clickable { }
+                    .clickable { onBack() }
             )
             Spacer(Modifier.width(6.dp))
             Column {
@@ -73,7 +74,7 @@ fun MartHeader(searchText: String, onSearchChange: (String) -> Unit) {
                 contentDescription = "Notification",
                 modifier = Modifier
                     .size(22.dp)
-                    .clickable {  }
+                    .clickable { }
             )
         }
 
@@ -214,10 +215,10 @@ data class DummyProduct(val name: String, val price: String, val image: Int)
 @Composable
 fun MartProductGrid() {
     val products = listOf(
-        DummyProduct("Daging Ayam", "Rp25.000", R.drawable.mart_ic_delivery),
-        DummyProduct("Daging Sapi", "Rp60.000", R.drawable.mart_ic_delivery),
-        DummyProduct("Daging Bebek", "Rp45.000", R.drawable.mart_ic_delivery),
-        DummyProduct("Daging Domba", "Rp55.000", R.drawable.mart_ic_delivery)
+        DummyProduct("Daging Ayam", "Rp25.000", R.drawable.mart_ayam),
+        DummyProduct("Daging Sapi", "Rp60.000", R.drawable.mart_sapi),
+        DummyProduct("Daging Bebek", "Rp45.000", R.drawable.mart_bebek),
+        DummyProduct("Daging Domba", "Rp55.000", R.drawable.mart_domba)
     )
 
     LazyVerticalGrid(

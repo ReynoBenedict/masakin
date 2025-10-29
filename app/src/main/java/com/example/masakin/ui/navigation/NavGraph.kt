@@ -73,7 +73,7 @@ fun MasakinNavGraph(navController: NavHostController) {
         }
 
         composable(Routes.MART) {
-            MartDagingScreen()
+            MartDagingScreen(onBack = { navController.popBackStack() })
         }
 
         composable(Routes.CHATBOT) {
