@@ -6,32 +6,39 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navOptions
 import com.example.masakin.ui.community.CommunityRoute
-// import com.example.masakin.ui.mart.screens.MartHomeScreen
 import com.example.masakin.ui.mart.screens.MartDagingScreen
-import com.example.masakin.ui.screens.* // HomeScreen, LoginScreen, RegisterScreen, ChatbotScreen, ConsultationScreen, etc.
 import com.example.masakin.ui.recipe.RecipeViewModel
-import com.example.masakin.ui.screens.RecipeRoute
+import com.example.masakin.ui.screens.*
 
 object Routes {
     const val ONBOARDING = "onboarding"
     const val LOGIN = "login"
     const val REGISTER = "register"
+
     const val HOME = "home"
+
+    // bottom navbar
+    const val CHAT = "chat"
+    const val MYFOOD = "myfood"
+    const val PROFILE = "profile"
+
+    // fitur lain
     const val CHATBOT = "chatbot"
     const val RECIPE = "recipe"
     const val COMMUNITY = "community"
     const val MART = "mart"
-
-    // ===== NEW: route konsultasi =====
     const val CONSULTATION = "consultation"
 }
 
 @Composable
 fun MasakinNavGraph(navController: NavHostController) {
+
     NavHost(
         navController = navController,
         startDestination = Routes.ONBOARDING
     ) {
+
+        // ================== ONBOARDING ==================
         composable(Routes.ONBOARDING) {
             OnboardingRoute(
                 onFinish = {
@@ -42,6 +49,7 @@ fun MasakinNavGraph(navController: NavHostController) {
             )
         }
 
+        // ================== LOGIN ==================
         composable(Routes.LOGIN) {
             LoginScreen(
                 onLoginClick = { _, _ ->
@@ -49,14 +57,15 @@ fun MasakinNavGraph(navController: NavHostController) {
                         popUpTo(Routes.LOGIN) { inclusive = true }
                     }
                 },
-                onForgotPasswordClick = { /* TODO */ },
+                onForgotPasswordClick = {},
                 onRegisterClick = { navController.navigate(Routes.REGISTER) },
-                onFacebookClick = { /* TODO */ },
-                onGoogleClick = { /* TODO */ },
-                onAppleClick = { /* TODO */ }
+                onFacebookClick = {},
+                onGoogleClick = {},
+                onAppleClick = {}
             )
         }
 
+        // ================== REGISTER ==================
         composable(Routes.REGISTER) {
             RegisterScreen(
                 onRegisterClick = { _, _, _ -> navController.popBackStack() },
@@ -64,17 +73,28 @@ fun MasakinNavGraph(navController: NavHostController) {
             )
         }
 
+        // ================== HOME + NAVBAR ==================
         composable(Routes.HOME) {
             HomeScreen(
                 onOpenChatbot = { navController.navigate(Routes.CHATBOT) },
                 onOpenRecipe = { navController.navigate(Routes.RECIPE) },
                 onOpenCommunity = { navController.navigate(Routes.COMMUNITY) },
                 onOpenMart = { navController.navigate(Routes.MART) },
-                // ===== NEW: navigasi ke konsultasi =====
-                onOpenConsultation = { navController.navigate(Routes.CONSULTATION) }
+                onOpenConsultation = { navController.navigate(Routes.CONSULTATION) },
+
+                // tambahan: untuk navbar
+                onOpenChat = { navController.navigate(Routes.CHAT) },
+                onOpenMyFood = { navController.navigate(Routes.MYFOOD) },
+                onOpenProfile = { navController.navigate(Routes.PROFILE) }
             )
         }
 
+        // ================== BOTTOM NAVBAR HALAMAN ==================
+        composable(Routes.CHAT) { ChatScreen() }
+        composable(Routes.MYFOOD) { MyFoodScreen() }
+        composable(Routes.PROFILE) { ProfileScreen() }
+
+        // ================== FITUR ==================
         composable(Routes.MART) {
             MartDagingScreen(onBack = { navController.popBackStack() })
         }
@@ -94,11 +114,10 @@ fun MasakinNavGraph(navController: NavHostController) {
         composable(Routes.COMMUNITY) {
             CommunityRoute(
                 onBack = { navController.popBackStack() },
-                onCreatePost = { /* navigate to composer */ }
+                onCreatePost = {}
             )
         }
 
-        // ===== NEW: halaman konsultasi =====
         composable(Routes.CONSULTATION) {
             ConsultationScreen(onBack = { navController.popBackStack() })
         }
