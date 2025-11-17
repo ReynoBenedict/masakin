@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1012889823301",
+    "project_id": "masakin-a06fa",
+    "storage_bucket": "masakin-a06fa.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1012889823301:android:d1da9866e7e7d575889b2c",
+        "android_client_info": {
+          "package_name": "com.example.masakin"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCj9xctGPMzP1asEiidPFqziQH8aFWz6qA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
