@@ -9,6 +9,8 @@ import com.example.masakin.ui.community.CommunityRoute
 import com.example.masakin.ui.mart.screens.MartDagingScreen
 import com.example.masakin.ui.recipe.RecipeViewModel
 import com.example.masakin.ui.screens.*
+import androidx.lifecycle.viewmodel.compose.viewModel
+
 
 object Routes {
     const val ONBOARDING = "onboarding"
@@ -86,9 +88,71 @@ fun MasakinNavGraph(navController: NavHostController) {
         }
 
         // ================== BOTTOM NAVBAR HALAMAN ==================
-        composable(Routes.CHAT) { ChatScreen() }
-        composable(Routes.MYFOOD) { MyFoodScreen() }
-        composable(Routes.PROFILE) { ProfileScreen() }
+        composable(Routes.CHAT) {
+            ChatScreen(
+                onOpenHome = {
+                    navController.navigate(Routes.HOME) {
+                        launchSingleTop = true
+                        popUpTo(Routes.HOME) { inclusive = false }
+                    }
+                },
+                onOpenChatbot = { navController.navigate(Routes.CHATBOT) },
+                onOpenMyFood = { navController.navigate(Routes.MYFOOD) },
+                onOpenProfile = { navController.navigate(Routes.PROFILE) }
+            )
+        }
+
+        composable(Routes.MYFOOD) {
+            MyFoodScreen(
+                onOpenHome = {
+                    navController.navigate(Routes.HOME) {
+                        launchSingleTop = true
+                        popUpTo(Routes.HOME) { inclusive = false }
+                    }
+                },
+                onOpenChat = {
+                    navController.navigate(Routes.CHAT) {
+                        launchSingleTop = true
+                        popUpTo(Routes.HOME) { inclusive = false }
+                    }
+                },
+                onOpenMyFood = {
+                    // sudah di MYFOOD, boleh dibiarkan kosong atau tetap navigate singleTop
+                },
+                onOpenProfile = {
+                    navController.navigate(Routes.PROFILE) {
+                        launchSingleTop = true
+                        popUpTo(Routes.HOME) { inclusive = false }
+                    }
+                }
+            )
+        }
+
+        composable(Routes.PROFILE) {
+            ProfileScreen(
+                onOpenHome = {
+                    navController.navigate(Routes.HOME) {
+                        launchSingleTop = true
+                        popUpTo(Routes.HOME) { inclusive = false }
+                    }
+                },
+                onOpenChat = {
+                    navController.navigate(Routes.CHAT) {
+                        launchSingleTop = true
+                        popUpTo(Routes.HOME) { inclusive = false }
+                    }
+                },
+                onOpenMyFood = {
+                    navController.navigate(Routes.MYFOOD) {
+                        launchSingleTop = true
+                        popUpTo(Routes.HOME) { inclusive = false }
+                    }
+                },
+                onOpenProfile = {
+                    // sudah di PROFILE
+                }
+            )
+        }
 
         // ================== FITUR ==================
         composable(Routes.MART) {
@@ -99,8 +163,10 @@ fun MasakinNavGraph(navController: NavHostController) {
             ChatbotScreen(onBack = { navController.popBackStack() })
         }
 
-        composable(Routes.RECIPE) {
-            val vm = RecipeViewModel()
+        composable(Routes.RECIPE) { backStackEntry ->
+            // ViewModel di-create dan dikelola oleh NavBackStackEntry
+            val vm: RecipeViewModel = viewModel(backStackEntry)
+
             RecipeRoute(
                 viewModel = vm,
                 onBack = { navController.popBackStack() }
