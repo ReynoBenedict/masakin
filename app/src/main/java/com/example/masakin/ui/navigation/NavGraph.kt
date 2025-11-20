@@ -142,6 +142,9 @@ fun MasakinNavGraph(navController: NavHostController) {
                         popUpTo(Routes.HOME) { inclusive = false }
                     }
                 },
+                onOpenChatbot = {
+                    navController.navigate(Routes.CHATBOT)
+                },
                 onOpenMyFood = {
                     navController.navigate(Routes.MYFOOD) {
                         launchSingleTop = true
@@ -150,6 +153,11 @@ fun MasakinNavGraph(navController: NavHostController) {
                 },
                 onOpenProfile = {
                     // sudah di PROFILE
+                },
+                onLogout = {
+                    navController.navigate(Routes.LOGIN) {
+                        popUpTo(0) { inclusive = true } // Clear semua back stack
+                    }
                 }
             )
         }

@@ -57,8 +57,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import com.example.masakin.ui.theme.Red20
 import com.example.masakin.ui.theme.Red50
-import androidx.compose.foundation.layout.offset
 import androidx.compose.ui.Alignment
+import com.example.masakin.ui.theme.Grey10
+import com.example.masakin.ui.theme.Grey30
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -94,15 +95,36 @@ fun HomeScreen(
             // Header Section
             item {
                 TopAppBar(
-                    title = {},
-                    navigationIcon = {
-                        IconButton(onClick = { /* Search action */ }) {
-                            Icon(
-                                imageVector = Icons.Default.Search,
-                                contentDescription = "Search",
-                                tint = Color.Gray
-                            )
+                    title = {
+                        // Search bar memanjang
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(36.dp)
+                                .clip(RoundedCornerShape(50))
+                                .background(Grey10)
+                                .padding(horizontal = 12.dp),
+                            contentAlignment = Alignment.CenterStart
+                        ) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Search,
+                                    contentDescription = "Search",
+                                    tint = Grey30
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text(
+                                    text = "Search",
+                                    color = Grey30,
+                                    fontSize = 14.sp
+                                )
+                            }
                         }
+                    },
+                    navigationIcon = {
+                        Spacer(modifier = Modifier.width(0.dp)) // supaya layout tetap seimbang
                     },
                     actions = {
                         IconButton(onClick = { /* Notification action */ }) {
