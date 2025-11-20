@@ -1,5 +1,6 @@
 package com.example.masakin.ui.screens
 
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -31,9 +32,10 @@ import com.example.masakin.ui.components.SocialLoginButton
 import com.example.masakin.ui.theme.Grey40
 import com.example.masakin.ui.theme.Red50
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
-
-@Preview(showBackground = true)
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.masakin.viewmodel.LoginViewModel
 
 @Composable
 fun LoginScreen(
@@ -42,11 +44,28 @@ fun LoginScreen(
     onRegisterClick: () -> Unit = {},
     onFacebookClick: () -> Unit = {},
     onGoogleClick: () -> Unit = {},
-    onAppleClick: () -> Unit = {}
+    onAppleClick: () -> Unit = {},
+    viewModel: LoginViewModel = viewModel()
 ) {
-    var email by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
+    val email by viewModel.email.collectAsState()
+    val password by viewModel.password.collectAsState()
+    val isSuccess by viewModel.isSuccess.collectAsState()
+    val errorMessage by viewModel.errorMessage.collectAsState(initial = null)
     var showPassword by remember { mutableStateOf(false) }
+
+    val context = LocalContext.current
+    LaunchedEffect(isSuccess) {
+        if (isSuccess) {
+            onLoginClick(email, password)
+            Toast.makeText(context, "User logged in successfully",
+                Toast.LENGTH_SHORT).show()
+        }
+
+        if (errorMessage != null) {
+            Toast.makeText(context, "Invalid Credentials", Toast.LENGTH_SHORT)
+                .show()
+        }
+    }
 
     Box(
         modifier = Modifier
@@ -109,7 +128,7 @@ fun LoginScreen(
             // Email
             OutlinedTextField(
                 value = email,
-                onValueChange = { email = it },
+                onValueChange = viewModel::updateEmail,
                 modifier = Modifier.fillMaxWidth(),
                 placeholder = { Text("Email", color = Grey40, fontSize = 12.sp) },
                 leadingIcon = {
@@ -132,7 +151,7 @@ fun LoginScreen(
             // Password
             OutlinedTextField(
                 value = password,
-                onValueChange = { password = it },
+                onValueChange = viewModel::updatePassword,
                 modifier = Modifier.fillMaxWidth(),
                 placeholder = { Text("Password", color = Grey40, fontSize = 12.sp) },
                 leadingIcon = {
@@ -181,7 +200,7 @@ fun LoginScreen(
 
             // Login button
             Button(
-                onClick = { onLoginClick(email, password) },
+                onClick = { viewModel.login() },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(56.dp)

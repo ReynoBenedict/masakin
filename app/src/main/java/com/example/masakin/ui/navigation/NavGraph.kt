@@ -52,11 +52,7 @@ fun MasakinNavGraph(navController: NavHostController) {
         // ================== LOGIN ==================
         composable(Routes.LOGIN) {
             LoginScreen(
-                onLoginClick = { _, _ ->
-                    navController.navigate(Routes.HOME) {
-                        popUpTo(Routes.LOGIN) { inclusive = true }
-                    }
-                },
+                onLoginClick = { _, _ -> navController.navigate(Routes.HOME)},
                 onForgotPasswordClick = {},
                 onRegisterClick = { navController.navigate(Routes.REGISTER) },
                 onFacebookClick = {},

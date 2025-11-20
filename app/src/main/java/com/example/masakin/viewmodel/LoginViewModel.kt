@@ -2,7 +2,9 @@ package com.example.masakin.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.auth
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
@@ -27,7 +29,7 @@ class LoginViewModel : ViewModel() {
     val isSuccess = _isSuccess.asStateFlow()
     val errorMessage = _errorMessage.asSharedFlow()
 
-    private val auth: FirebaseAuth = FirebaseAuth.getInstance()
+    private val auth: FirebaseAuth = Firebase.auth
 
     fun updateEmail(v: String) { _email.value = v }
     fun updatePassword(v: String) { _password.value = v }

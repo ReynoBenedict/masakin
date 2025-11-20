@@ -12,7 +12,7 @@ import com.example.masakin.ui.screens.OnboardingScreen
 @Composable
 fun OnboardingRoute(
     vm: OnboardingViewModel = viewModel(),
-    onFinish: () -> Unit // arahkan ke Auth
+    onFinish: () -> Unit
 ) {
     val ui by vm.uiState.collectAsState()
     val scope = rememberCoroutineScope()
