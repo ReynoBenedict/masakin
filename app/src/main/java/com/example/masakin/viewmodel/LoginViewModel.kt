@@ -12,9 +12,14 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 class LoginViewModel : ViewModel() {
+
     private val _email = MutableStateFlow("")
     private val _password = MutableStateFlow("")
     private val _showPassword = MutableStateFlow(false)
+
+    // error per kolom
+    private val _emailError = MutableStateFlow<String?>(null)
+    private val _passwordError = MutableStateFlow<String?>(null)
 
     // UI state
     private val _isLoading = MutableStateFlow(false)
@@ -25,22 +30,53 @@ class LoginViewModel : ViewModel() {
     val password = _password.asStateFlow()
     val showPassword = _showPassword.asStateFlow()
 
+    val emailError = _emailError.asStateFlow()
+    val passwordError = _passwordError.asStateFlow()
+
     val isLoading = _isLoading.asStateFlow()
     val isSuccess = _isSuccess.asStateFlow()
     val errorMessage = _errorMessage.asSharedFlow()
 
     private val auth: FirebaseAuth = Firebase.auth
 
-    fun updateEmail(v: String) { _email.value = v }
-    fun updatePassword(v: String) { _password.value = v }
-    fun toggleShowPassword() { _showPassword.value = !_showPassword.value }
+    fun updateEmail(v: String) {
+        _email.value = v
+        _emailError.value = null
+    }
+
+    fun updatePassword(v: String) {
+        _password.value = v
+        _passwordError.value = null
+    }
+
+    fun toggleShowPassword() {
+        _showPassword.value = !_showPassword.value
+    }
 
     fun login() {
         val emailVal = _email.value.trim()
         val passwordVal = _password.value
 
-        if (emailVal.isEmpty() || passwordVal.isEmpty()) {
-            viewModelScope.launch { _errorMessage.emit("Email dan password wajib diisi.") }
+        // reset error dulu
+        _emailError.value = null
+        _passwordError.value = null
+
+        var hasError = false
+
+        if (emailVal.isEmpty()) {
+            _emailError.value = "Kolom tidak boleh kosong"
+            hasError = true
+        }
+
+        if (passwordVal.isEmpty()) {
+            _passwordError.value = "Kolom tidak boleh kosong"
+            hasError = true
+        }
+
+        if (hasError) {
+            viewModelScope.launch {
+                _errorMessage.emit("Periksa kembali kolom yang ditandai merah")
+            }
             return
         }
 
@@ -53,14 +89,16 @@ class LoginViewModel : ViewModel() {
                 if (task.isSuccessful) {
                     _isSuccess.value = true
                 } else {
+                    val msg = "Maaf email/password anda salah, silahkan coba kembali"
+                    _emailError.value = msg
+                    _passwordError.value = msg
                     viewModelScope.launch {
-                        _errorMessage.emit(task.exception?.message ?: "Login gagal.")
+                        _errorMessage.emit(msg)
                     }
                 }
             }
     }
 
-    /** optional: logout helper */
     fun logout() {
         auth.signOut()
         _isSuccess.value = false
