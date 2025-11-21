@@ -1,266 +1,185 @@
 package com.example.masakin.ui.mart.screens
 
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.border
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.masakin.R
+import com.example.masakin.ui.mart.components.*
+import com.example.masakin.ui.mart.utils.LocationPermissionHandler
+import com.example.masakin.ui.mart.viewmodel.MartViewModel
+import com.google.android.gms.location.LocationServices
 
 @Composable
-fun MartDagingScreen(onBack: () -> Unit = {}) {
-    var selectedCategory by remember { mutableStateOf("Daging") }
-    var searchText by remember { mutableStateOf("") }
-
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(horizontal = 16.dp)
-    ) {
-        Spacer(Modifier.height(24.dp))
-        MartHeader(searchText, onSearchChange = { searchText = it }, onBack = onBack)
-        Spacer(Modifier.height(12.dp))
-        MartMenuRow()
-        Spacer(Modifier.height(8.dp))
-        MartCategoryRow(selectedCategory) { selectedCategory = it }
-        Spacer(Modifier.height(14.dp))
-        MartProductSection()
+fun MartDagingScreen(
+    onBack: () -> Unit = {},
+    onProductClick: (String) -> Unit = {},
+    viewModel: MartViewModel = viewModel()
+) {
+    val uiState by viewModel.uiState.collectAsState()
+    val context = LocalContext.current
+    val fusedLocationClient = remember {
+        LocationServices.getFusedLocationProviderClient(context)
     }
-}
 
-@Composable
-fun MartHeader(searchText: String, onSearchChange: (String) -> Unit, onBack: () -> Unit) {
-    Column {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.fillMaxWidth()
-        ) {
+    var showLocationDialog by remember { mutableStateOf(false) }
 
-            Image(
-                painter = painterResource(R.drawable.mart_ic_location_red),
-                contentDescription = "Back",
-                modifier = Modifier
-                    .size(18.dp)
-                    .clickable { onBack() }
-            )
-            Spacer(Modifier.width(6.dp))
-            Column {
-                Text("Delivery address", fontSize = 10.sp, color = Color.Gray)
-                Text(
-                    "Malang, Jawa Timur",
-                    color = Color.Red,
-                    fontWeight = FontWeight.Medium,
-                    fontSize = 12.sp
-                )
+    // TESTING: Uncomment untuk force set Malang
+    // LaunchedEffect(Unit) {
+    //     viewModel.setManualLocation("Malang, Jawa Timur")
+    // }
+
+    // Auto-request location on first launch (optional)
+    LaunchedEffect(Unit) {
+        // Uncomment to auto-request location on screen launch
+        // viewModel.requestLocationUpdate(context, fusedLocationClient)
+    }
+
+    // Location Permission Handler
+    if (showLocationDialog) {
+        LocationPermissionHandler(
+            onPermissionGranted = { client ->
+                viewModel.requestLocationUpdate(context, client)
+                showLocationDialog = false
+            },
+            onPermissionDenied = {
+                showLocationDialog = false
+                // Show snackbar or dialog
             }
-            Spacer(Modifier.weight(1f))
-            Image(
-                painter = painterResource(R.drawable.mart_ic_notification),
-                contentDescription = "Notification",
-                modifier = Modifier
-                    .size(22.dp)
-                    .clickable { }
-            )
-        }
+        )
+    }
 
-        Spacer(Modifier.height(10.dp))
-
-        Row(
+    Scaffold(
+        containerColor = Color(0xFFFAFAFA)
+    ) { padding ->
+        Column(
             modifier = Modifier
-                .fillMaxWidth()
-                .height(40.dp)
-                .border(1.dp, Color.Gray.copy(0.4f), RoundedCornerShape(10.dp))
-                .clip(RoundedCornerShape(10.dp))
-                .padding(horizontal = 12.dp, vertical = 6.dp),
-            verticalAlignment = Alignment.CenterVertically
+                .fillMaxSize()
+                .padding(padding)
+                .padding(horizontal = 16.dp)
         ) {
-            BasicTextField(
-                value = searchText,
-                onValueChange = onSearchChange,
-                singleLine = true,
-                textStyle = LocalTextStyle.current.copy(
-                    fontSize = 13.sp,
-                    color = Color.Black
-                ),
-                decorationBox = { innerTextField ->
-                    if (searchText.isEmpty()) {
-                        Text(
-                            text = "Search",
-                            color = Color.Gray.copy(alpha = 0.6f),
-                            fontSize = 13.sp
+            Spacer(Modifier.height(24.dp))
+
+            // Header
+            MartHeader(
+                deliveryAddress = uiState.deliveryAddress,
+                searchText = uiState.searchQuery,
+                isLoadingLocation = uiState.isLoadingLocation,
+                onSearchChange = { viewModel.onSearchQueryChanged(it) },
+                onLocationClick = {
+                    showLocationDialog = true
+                },
+                onNotificationClick = { /* Handle notification */ },
+                onBackClick = onBack // Tambahkan back button
+            )
+
+            Spacer(Modifier.height(16.dp))
+
+            // Menu Buttons (Cart, Order, Favorite)
+            MartMenuButtons(
+                onCartClick = { /* Navigate to cart */ },
+                onOrderClick = { /* Navigate to orders */ },
+                onFavoriteClick = { /* Navigate to favorites */ }
+            )
+
+            Spacer(Modifier.height(20.dp))
+
+            // Category Row
+            MartCategoryRow(
+                selectedCategory = uiState.selectedCategory,
+                onCategorySelected = { viewModel.onCategorySelected(it) }
+            )
+
+            Spacer(Modifier.height(20.dp))
+
+            // Recent Product Header
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "Recent Product",
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 18.sp,
+                    color = Color(0xFF111827)
+                )
+
+                // Filter Button dengan ukuran lebih besar
+                Box(
+                    modifier = Modifier
+                        .size(48.dp)
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(Color(0xFFF3F4F6))
+                        .clickable { /* Handle filter */ },
+                    contentAlignment = Alignment.Center
+                ) {
+                    CustomFilterIcon(
+                        size = 28.dp,
+                        color = Color(0xFF374151)
+                    )
+                }
+            }
+
+            Spacer(Modifier.height(12.dp))
+
+            // Product Grid
+            if (uiState.products.isEmpty()) {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "No products found",
+                        color = Color.Gray,
+                        fontSize = 14.sp
+                    )
+                }
+            } else {
+                LazyVerticalGrid(
+                    columns = GridCells.Fixed(2),
+                    verticalArrangement = Arrangement.spacedBy(14.dp),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    contentPadding = PaddingValues(bottom = 80.dp)
+                ) {
+                    items(uiState.products) { product ->
+                        ProductCard(
+                            product = product,
+                            onClick = { onProductClick(product.id) }
                         )
                     }
-                    innerTextField()
-                },
-                modifier = Modifier.fillMaxWidth()
-            )
-        }
-    }
-}
-
-@Composable
-fun MartMenuRow() {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceEvenly
-    ) {
-        MenuIcon(R.drawable.mart_ic_cart)
-        MenuIcon(R.drawable.mart_ic_order)
-        MenuIcon(R.drawable.mart_ic_favorite)
-    }
-}
-
-@Composable
-fun MenuIcon(icon: Int) {
-    Image(
-        painter = painterResource(icon),
-        contentDescription = null,
-        modifier = Modifier
-            .size(55.dp)
-            .clickable { }
-    )
-}
-
-@Composable
-fun MartCategoryRow(selected: String, onSelect: (String) -> Unit) {
-    val categories = listOf(
-        "Daging" to R.drawable.mart_ic_cat_daging,
-        "Buah" to R.drawable.mart_ic_cat_buah,
-        "Sayur" to R.drawable.mart_ic_cat_sayur,
-        "Bumbu" to R.drawable.mart_ic_cat_bumbu
-    )
-
-    Column {
-        Text(
-            text = "Kategori",
-            fontWeight = FontWeight.Bold,
-            fontSize = 16.sp,
-            modifier = Modifier.padding(bottom = 8.dp)
-        )
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            categories.forEach { (name, icon) ->
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    modifier = Modifier.clickable { onSelect(name) }
-                ) {
-                    Image(
-                        painter = painterResource(icon),
-                        contentDescription = name,
-                        modifier = Modifier.size(60.dp)
-                    )
-                    Spacer(Modifier.height(4.dp))
-                    Text(
-                        text = name,
-                        color = if (selected == name) Color.Red else Color.Black,
-                        fontWeight = if (selected == name) FontWeight.Bold else FontWeight.Medium,
-                        fontSize = 13.sp
-                    )
                 }
             }
         }
     }
-}
 
-@Composable
-fun MartProductSection() {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Text(
-            text = "Recent Product",
-            fontWeight = FontWeight.Bold,
-            fontSize = 18.sp
-        )
-        Box(
-            modifier = Modifier
-                .size(48.dp)
-                .clip(RoundedCornerShape(8.dp))
-                .clickable {},
-            contentAlignment = Alignment.Center
+    // Show error snackbar if location error
+    uiState.locationError?.let { error ->
+        Snackbar(
+            modifier = Modifier.padding(16.dp),
+            action = {
+                TextButton(onClick = { /* Dismiss */ }) {
+                    Text("OK")
+                }
+            }
         ) {
-            Image(
-                painter = painterResource(R.drawable.mart_ic_filter),
-                contentDescription = "Filter",
-                modifier = Modifier.size(28.dp)
-            )
+            Text(error)
         }
-    }
-
-    Spacer(Modifier.height(12.dp))
-    MartProductGrid()
-}
-
-data class DummyProduct(val name: String, val price: String, val image: Int)
-
-@Composable
-fun MartProductGrid() {
-    val products = listOf(
-        DummyProduct("Daging Ayam", "Rp25.000", R.drawable.mart_ayam),
-        DummyProduct("Daging Sapi", "Rp60.000", R.drawable.mart_sapi),
-        DummyProduct("Daging Bebek", "Rp45.000", R.drawable.mart_bebek),
-        DummyProduct("Daging Domba", "Rp55.000", R.drawable.mart_domba)
-    )
-
-    LazyVerticalGrid(
-        columns = GridCells.Fixed(2),
-        verticalArrangement = Arrangement.spacedBy(16.dp),
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
-        modifier = Modifier.padding(bottom = 60.dp)
-    ) {
-        items(products) { product -> ProductCard(product) }
-    }
-}
-
-@Composable
-fun ProductCard(product: DummyProduct) {
-    Column(
-        horizontalAlignment = Alignment.Start,
-        modifier = Modifier
-            .clip(RoundedCornerShape(10.dp))
-            .fillMaxWidth()
-    ) {
-        Image(
-            painter = painterResource(product.image),
-            contentDescription = product.name,
-            contentScale = ContentScale.Crop,
-            modifier = Modifier
-                .height(160.dp)
-                .fillMaxWidth()
-                .clip(RoundedCornerShape(10.dp))
-        )
-        Spacer(Modifier.height(6.dp))
-        Text(
-            product.name,
-            fontWeight = FontWeight.Bold,
-            fontSize = 14.sp,
-            modifier = Modifier.padding(horizontal = 4.dp)
-        )
-        Text(
-            product.price,
-            color = Color.Red,
-            fontWeight = FontWeight.Medium,
-            fontSize = 13.sp,
-            modifier = Modifier.padding(start = 4.dp, bottom = 6.dp)
-        )
     }
 }
