@@ -6,7 +6,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navOptions
 import com.example.masakin.ui.community.CommunityRoute
-import com.example.masakin.ui.mart.screens.MartDagingScreen
+import com.example.masakin.ui.mart.navigation.MartNavGraph
 import com.example.masakin.ui.recipe.RecipeViewModel
 import com.example.masakin.ui.screens.*
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -173,7 +173,7 @@ fun MasakinNavGraph(
 
         // ================== FITUR ==================
         composable(Routes.MART) {
-            MartDagingScreen(onBack = { navController.popBackStack() })
+            MartNavGraph()
         }
 
         composable(Routes.CHATBOT) {
