@@ -11,7 +11,6 @@ import com.example.masakin.ui.recipe.RecipeViewModel
 import com.example.masakin.ui.screens.*
 import androidx.lifecycle.viewmodel.compose.viewModel
 
-
 object Routes {
     const val ONBOARDING = "onboarding"
     const val LOGIN = "login"
@@ -33,7 +32,10 @@ object Routes {
 }
 
 @Composable
-fun MasakinNavGraph(navController: NavHostController) {
+fun MasakinNavGraph(
+    navController: NavHostController,
+    onGoogleClick: () -> Unit
+) {
 
     NavHost(
         navController = navController,
@@ -54,11 +56,15 @@ fun MasakinNavGraph(navController: NavHostController) {
         // ================== LOGIN ==================
         composable(Routes.LOGIN) {
             LoginScreen(
-                onLoginClick = { _, _ -> navController.navigate(Routes.HOME)},
+                onLoginClick = { _, _ ->
+                    navController.navigate(Routes.HOME) {
+                        popUpTo(Routes.LOGIN) { inclusive = true }
+                    }
+                },
                 onForgotPasswordClick = {},
                 onRegisterClick = { navController.navigate(Routes.REGISTER) },
                 onFacebookClick = {},
-                onGoogleClick = {},
+                onGoogleClick = onGoogleClick,
                 onAppleClick = {}
             )
         }
@@ -66,8 +72,13 @@ fun MasakinNavGraph(navController: NavHostController) {
         // ================== REGISTER ==================
         composable(Routes.REGISTER) {
             RegisterScreen(
-                onRegisterClick = { _, _, _ -> navController.popBackStack() },
-                onBackToLoginClick = { navController.popBackStack() }
+                onRegisterClick = { _, _, _ ->
+                    navController.popBackStack()
+                },
+                onBackToLoginClick = { navController.popBackStack() },
+                onFacebookClick = {},
+                onGoogleClick = onGoogleClick,
+                onAppleClick = {}
             )
         }
 
@@ -80,7 +91,6 @@ fun MasakinNavGraph(navController: NavHostController) {
                 onOpenMart = { navController.navigate(Routes.MART) },
                 onOpenConsultation = { navController.navigate(Routes.CONSULTATION) },
 
-                // tambahan: untuk navbar
                 onOpenChat = { navController.navigate(Routes.CHAT) },
                 onOpenMyFood = { navController.navigate(Routes.MYFOOD) },
                 onOpenProfile = { navController.navigate(Routes.PROFILE) }
@@ -117,7 +127,7 @@ fun MasakinNavGraph(navController: NavHostController) {
                     }
                 },
                 onOpenMyFood = {
-                    // sudah di MYFOOD, boleh dibiarkan kosong atau tetap navigate singleTop
+
                 },
                 onOpenProfile = {
                     navController.navigate(Routes.PROFILE) {
@@ -152,11 +162,10 @@ fun MasakinNavGraph(navController: NavHostController) {
                     }
                 },
                 onOpenProfile = {
-                    // sudah di PROFILE
                 },
                 onLogout = {
                     navController.navigate(Routes.LOGIN) {
-                        popUpTo(0) { inclusive = true } // Clear semua back stack
+                        popUpTo(0) { inclusive = true }
                     }
                 }
             )
@@ -172,9 +181,7 @@ fun MasakinNavGraph(navController: NavHostController) {
         }
 
         composable(Routes.RECIPE) { backStackEntry ->
-            // ViewModel di-create dan dikelola oleh NavBackStackEntry
             val vm: RecipeViewModel = viewModel(backStackEntry)
-
             RecipeRoute(
                 viewModel = vm,
                 onBack = { navController.popBackStack() }

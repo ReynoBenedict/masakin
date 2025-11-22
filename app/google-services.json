@@ -14,6 +14,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "849809303322-qe1dm5rllsblg31gbhuhid0tt6f3srg6.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.masakin",
+            "certificate_hash": "e182b6d2ffe01f4843faca18a7429f8f45911594"
+          }
+        },
+        {
           "client_id": "849809303322-99uieg83k5c2fta8firb2ur8umjip3qi.apps.googleusercontent.com",
           "client_type": 3
         }
