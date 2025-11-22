@@ -6,8 +6,13 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navOptions
 import com.example.masakin.ui.community.CommunityRoute
+<<<<<<< Updated upstream
 //import com.example.masakin.ui.mart.screens.MartHomeScreen
 import com.example.masakin.ui.mart.screens.MartDagingScreen
+=======
+import com.example.masakin.ui.mart.navigation.MartNavGraph
+import com.example.masakin.ui.recipe.RecipeViewModel
+>>>>>>> Stashed changes
 import com.example.masakin.ui.screens.*
 import com.example.masakin.ui.recipe.RecipeViewModel
 import com.example.masakin.ui.screens.RecipeRoute
@@ -73,7 +78,7 @@ fun MasakinNavGraph(navController: NavHostController) {
         }
 
         composable(Routes.MART) {
-            MartDagingScreen(onBack = { navController.popBackStack() })
+            MartNavGraph()
         }
 
         composable(Routes.CHATBOT) {
