@@ -1,15 +1,17 @@
 package com.example.masakin.ui.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.navArgument
 import androidx.navigation.navOptions
 import com.example.masakin.ui.community.CommunityRoute
 import com.example.masakin.ui.mart.navigation.MartNavGraph
 import com.example.masakin.ui.recipe.RecipeViewModel
 import com.example.masakin.ui.screens.*
-import androidx.lifecycle.viewmodel.compose.viewModel
 
 object Routes {
     const val ONBOARDING = "onboarding"
@@ -29,6 +31,13 @@ object Routes {
     const val COMMUNITY = "community"
     const val MART = "mart"
     const val CONSULTATION = "consultation"
+    const val APPOINTMENT = "appointment/{consultantId}"
+    const val CHAT_SCREEN_2 = "chat_screen_2/{consultantId}"
+
+
+    fun appointmentRoute(consultantId: String) = "appointment/$consultantId"
+    fun chatScreen2Route(consultantId: String) = "chat_screen_2/$consultantId"
+
 }
 
 @Composable
@@ -91,24 +100,45 @@ fun MasakinNavGraph(
                 onOpenMart = { navController.navigate(Routes.MART) },
                 onOpenConsultation = { navController.navigate(Routes.CONSULTATION) },
 
-                onOpenChat = { navController.navigate(Routes.CHAT) },
+                // Navigasi ke Chat List saat tombol Chat di Navbar Home ditekan
+                onOpenChat = {
+                    navController.navigate(Routes.CHAT) {
+                        launchSingleTop = true
+                        popUpTo(Routes.HOME) { inclusive = false }
+                    }
+                },
                 onOpenMyFood = { navController.navigate(Routes.MYFOOD) },
                 onOpenProfile = { navController.navigate(Routes.PROFILE) }
             )
         }
 
         // ================== BOTTOM NAVBAR HALAMAN ==================
+
+        // UPDATE: Routes.CHAT sekarang mengarah ke ChatListScreen
         composable(Routes.CHAT) {
-            ChatScreen(
-                onOpenHome = {
+            ChatListScreen(
+                onNavigateToHome = {
                     navController.navigate(Routes.HOME) {
+                        launchSingleTop = true
+                        popUpTo(Routes.HOME) { inclusive = true } // Kembali ke home utama
+                    }
+                },
+                onNavigateToMyFood = {
+                    navController.navigate(Routes.MYFOOD) {
                         launchSingleTop = true
                         popUpTo(Routes.HOME) { inclusive = false }
                     }
                 },
-                onOpenChatbot = { navController.navigate(Routes.CHATBOT) },
-                onOpenMyFood = { navController.navigate(Routes.MYFOOD) },
-                onOpenProfile = { navController.navigate(Routes.PROFILE) }
+                onNavigateToProfile = {
+                    navController.navigate(Routes.PROFILE) {
+                        launchSingleTop = true
+                        popUpTo(Routes.HOME) { inclusive = false }
+                    }
+                },
+                onNavigateToChatDetail = { consultantId ->
+                    // Membuka ChatScreen2 milik Dokter Trini
+                    navController.navigate(Routes.chatScreen2Route(consultantId))
+                }
             )
         }
 
@@ -126,9 +156,7 @@ fun MasakinNavGraph(
                         popUpTo(Routes.HOME) { inclusive = false }
                     }
                 },
-                onOpenMyFood = {
-
-                },
+                onOpenMyFood = {},
                 onOpenProfile = {
                     navController.navigate(Routes.PROFILE) {
                         launchSingleTop = true
@@ -152,17 +180,14 @@ fun MasakinNavGraph(
                         popUpTo(Routes.HOME) { inclusive = false }
                     }
                 },
-                onOpenChatbot = {
-                    navController.navigate(Routes.CHATBOT)
-                },
+                onOpenChatbot = { navController.navigate(Routes.CHATBOT) },
                 onOpenMyFood = {
                     navController.navigate(Routes.MYFOOD) {
                         launchSingleTop = true
                         popUpTo(Routes.HOME) { inclusive = false }
                     }
                 },
-                onOpenProfile = {
-                },
+                onOpenProfile = {},
                 onLogout = {
                     navController.navigate(Routes.LOGIN) {
                         popUpTo(0) { inclusive = true }
@@ -196,7 +221,43 @@ fun MasakinNavGraph(
         }
 
         composable(Routes.CONSULTATION) {
-            ConsultationScreen(onBack = { navController.popBackStack() })
+            ConsultationScreen(
+                onBack = { navController.popBackStack() },
+                onConsultantClick = {
+                    navController.navigate(Routes.appointmentRoute(it))
+                }
+            )
+        }
+
+        composable(
+            route = Routes.APPOINTMENT,
+            arguments = listOf(navArgument("consultantId") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val consultantId = backStackEntry.arguments?.getString("consultantId")
+            if (consultantId != null) {
+                AppointmentScreen(
+                    consultantId = consultantId,
+                    onBack = { navController.popBackStack() },
+                    onNavigateToChat = {
+                        navController.navigate(Routes.chatScreen2Route(it)) {
+                            popUpTo(Routes.HOME)
+                        }
+                    }
+                )
+            }
+        }
+
+        composable(
+            route = Routes.CHAT_SCREEN_2,
+            arguments = listOf(navArgument("consultantId") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val consultantId = backStackEntry.arguments?.getString("consultantId")
+            if (consultantId != null) {
+                ChatScreen2(
+                    consultantId = consultantId,
+                    onBackToHome = { navController.popBackStack() }
+                )
+            }
         }
     }
 }
