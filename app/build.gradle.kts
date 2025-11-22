@@ -46,6 +46,19 @@ dependencies {
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
 
+    // ViewModel
+    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.7.0")
+    implementation("androidx.lifecycle:lifecycle-runtime-compose:2.7.0")
+
+    // Location Services
+    implementation("com.google.android.gms:play-services-location:21.1.0")
+
+    // Permissions (Accompanist)
+    implementation("com.google.accompanist:accompanist-permissions:0.34.0")
+
+    // Coroutines
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.7.3")
+
     // Compose pakai BOM dari libs
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.ui)
