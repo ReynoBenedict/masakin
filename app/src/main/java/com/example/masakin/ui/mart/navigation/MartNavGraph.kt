@@ -54,10 +54,7 @@ fun MartNavGraph(
             ProductDetailScreen(
                 productId = productId,
                 onBack = { 
-                    navController.navigate(MartRoute.Home.route) {
-                        popUpTo(MartRoute.Home.route) { inclusive = true }
-                        launchSingleTop = true
-                    }
+                    navController.popBackStack(MartRoute.Home.route, inclusive = false)
                 },
                 onCartClick = { navController.navigate(MartRoute.Cart.route) },
                 viewModel = viewModel
@@ -67,10 +64,7 @@ fun MartNavGraph(
         composable(MartRoute.Cart.route) {
             CartScreen(
                 onBack = { 
-                    navController.navigate(MartRoute.Home.route) {
-                        popUpTo(MartRoute.Home.route) { inclusive = true }
-                        launchSingleTop = true
-                    }
+                    navController.popBackStack(MartRoute.Home.route, inclusive = false)
                 },
                 onCheckout = { navController.navigate(MartRoute.Checkout.route) },
                 viewModel = viewModel
@@ -80,10 +74,7 @@ fun MartNavGraph(
         composable(MartRoute.Checkout.route) {
             CheckoutScreen(
                 onBack = { 
-                    navController.navigate(MartRoute.Home.route) {
-                        popUpTo(MartRoute.Home.route) { inclusive = true }
-                        launchSingleTop = true
-                    }
+                    navController.popBackStack(MartRoute.Home.route, inclusive = false)
                 },
                 onPaymentSuccess = {
                     navController.navigate(MartRoute.PaymentSuccess.route) {

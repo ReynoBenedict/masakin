@@ -30,7 +30,7 @@ fun MartCategoryScreen(
     val uiState by viewModel.uiState.collectAsState()
     
     LaunchedEffect(category) {
-        viewModel.onCategorySelected(category)
+        viewModel.selectCategory(category)
     }
 
     Scaffold(

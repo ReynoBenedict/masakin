@@ -3,11 +3,11 @@ package com.example.masakin.ui.mart.screens.home
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -19,15 +19,16 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.masakin.ui.mart.components.FloatingCartBar
 import com.example.masakin.ui.mart.components.MartCategoryRow
 import com.example.masakin.ui.mart.components.MartHeader
 import com.example.masakin.ui.mart.components.MartMenuButtons
-import com.example.masakin.ui.mart.components.ProductCard
+import com.example.masakin.ui.mart.components.MartProductSection
 import com.example.masakin.ui.mart.data.ProductCategory
+import com.example.masakin.ui.mart.data.ProductRepository
 import com.example.masakin.ui.mart.viewmodel.MartViewModel
 import com.google.android.gms.location.LocationServices
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.delay
 
 @Composable
 fun MartHomeScreen(
@@ -44,43 +45,66 @@ fun MartHomeScreen(
     val scope = rememberCoroutineScope()
     val listState = rememberLazyListState()
     
+    // Track category section positions
+    val categoryPositions = remember { mutableStateMapOf<ProductCategory, Int>() }
+    var isScrollingProgrammatically by remember { mutableStateOf(false) }
+    
     // Group products by category for the scrollable list
     val groupedProducts = remember {
-        ProductCategory.values().associateWith { category ->
-            com.example.masakin.ui.mart.data.ProductRepository.getProductsByCategory(category)
+        ProductCategory.entries.associateWith { category ->
+            ProductRepository.getProductsByCategory(category)
         }
     }
-
-    // Calculate cart total items for summary
-    val cartItemCount = uiState.cartItems.sumOf { it.quantity }
-    var showCartSummary by remember { mutableStateOf(false) }
-
-    // Show summary when cart updates
-    LaunchedEffect(cartItemCount) {
-        if (cartItemCount > 0) {
-            showCartSummary = true
-            delay(3000)
-            showCartSummary = false
+    
+    // Snackbar visibility state
+    var showSnackbar by remember { mutableStateOf(false) }
+    var snackbarMessage by remember { mutableStateOf("") }
+    
+    // Auto-update selected category based on scroll position
+    LaunchedEffect(listState.firstVisibleItemIndex, listState.isScrollInProgress) {
+        if (!isScrollingProgrammatically && listState.isScrollInProgress) {
+            val currentIndex = listState.firstVisibleItemIndex
+            
+            // Find which category section we're in
+            val currentCategory = categoryPositions.entries
+                .sortedBy { it.value }
+                .findLast { it.value <= currentIndex }
+                ?.key
+            
+            if (currentCategory != null && currentCategory != uiState.selectedCategory) {
+                viewModel.selectCategory(currentCategory)
+            }
         }
     }
 
     Scaffold(
         snackbarHost = { 
-            SnackbarHost(snackbarHostState) { data ->
-                Snackbar(
-                    modifier = Modifier.padding(16.dp).shadow(4.dp, androidx.compose.foundation.shape.RoundedCornerShape(8.dp)),
-                    containerColor = Color.White,
-                    contentColor = Color(0xFF111827),
-                    shape = androidx.compose.foundation.shape.RoundedCornerShape(8.dp),
-                    action = {
-                        data.visuals.actionLabel?.let { actionLabel ->
-                            TextButton(onClick = { data.performAction() }) {
-                                Text(actionLabel, color = Color(0xFF4CAF50))
-                            }
-                        }
-                    }
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(bottom = 100.dp),
+                contentAlignment = Alignment.BottomCenter
+            ) {
+                AnimatedVisibility(
+                    visible = showSnackbar,
+                    enter = slideInVertically(initialOffsetY = { it }),
+                    exit = slideOutVertically(targetOffsetY = { it })
                 ) {
-                    Text(data.visuals.message)
+                    Surface(
+                        modifier = Modifier
+                            .padding(horizontal = 16.dp)
+                            .shadow(4.dp, RoundedCornerShape(12.dp)),
+                        shape = RoundedCornerShape(12.dp),
+                        color = Color(0xFFF3F4F6)
+                    ) {
+                        Text(
+                            text = snackbarMessage,
+                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Medium,
+                            color = Color(0xFF111827)
+                        )
+                    }
                 }
             }
         },
@@ -100,7 +124,7 @@ fun MartHomeScreen(
                             deliveryAddress = uiState.deliveryAddress,
                             searchText = uiState.searchQuery,
                             isLoadingLocation = uiState.isLoadingLocation,
-                            onSearchChange = { query -> viewModel.onSearchQueryChanged(query) },
+                            onSearchChange = { query -> viewModel.updateSearchQuery(query) },
                             onLocationClick = { 
                                 val client = LocationServices.getFusedLocationProviderClient(context)
                                 viewModel.requestLocationUpdate(context, client)
@@ -121,8 +145,12 @@ fun MartHomeScreen(
                             MartCategoryRow(
                                 selectedCategory = uiState.selectedCategory,
                                 onCategorySelected = { category ->
+                                    viewModel.selectCategory(category)
                                     scope.launch {
-                                        listState.animateScrollToItem(category.ordinal + 1)
+                                        isScrollingProgrammatically = true
+                                        val targetIndex = categoryPositions[category] ?: 0
+                                        listState.animateScrollToItem(targetIndex)
+                                        isScrollingProgrammatically = false
                                     }
                                 }
                             )
@@ -131,117 +159,31 @@ fun MartHomeScreen(
                     }
                 }
 
-                if (uiState.searchQuery.isNotEmpty()) {
-                    // Search Results
-                    items(uiState.products.chunked(2)) { rowProducts ->
-                        Row(
-                            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
-                            horizontalArrangement = Arrangement.spacedBy(12.dp)
-                        ) {
-                            rowProducts.forEach { product ->
-                                Box(modifier = Modifier.weight(1f)) {
-                                    ProductCard(
-                                        product = product,
-                                        onClick = { id -> onProductClick(id) },
-                                        onAddToCart = { product ->
-                                            viewModel.addToCart(product, 1)
-                                            scope.launch {
-                                                snackbarHostState.currentSnackbarData?.dismiss()
-                                                snackbarHostState.showSnackbar(
-                                                    message = "Produk berhasil dimasukkan ke Cart!",
-                                                    duration = SnackbarDuration.Short
-                                                )
-                                            }
-                                        }
-                                    )
-                                }
-                            }
-                            if (rowProducts.size == 1) {
-                                Spacer(modifier = Modifier.weight(1f))
-                            }
-                        }
-                        Spacer(modifier = Modifier.height(14.dp))
-                    }
-                } else {
-                    // Category Sections
-                    items(ProductCategory.values()) { category ->
-                        val products = groupedProducts[category] ?: emptyList()
-                        if (products.isNotEmpty()) {
-                            Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
-                                Text(
-                                    text = category.name.lowercase().replaceFirstChar { it.uppercase() },
-                                    fontWeight = FontWeight.Bold,
-                                    fontSize = 18.sp,
-                                    color = Color(0xFF111827),
-                                    modifier = Modifier.padding(vertical = 8.dp)
-                                )
-                                
-                                val chunkedProducts = products.chunked(2)
-                                chunkedProducts.forEach { rowProducts ->
-                                    Row(
-                                        modifier = Modifier.fillMaxWidth(),
-                                        horizontalArrangement = Arrangement.spacedBy(12.dp)
-                                    ) {
-                                        rowProducts.forEach { product ->
-                                            Box(modifier = Modifier.weight(1f)) {
-                                                ProductCard(
-                                                    product = product,
-                                                    onClick = { id -> onProductClick(id) },
-                                                    onAddToCart = { product ->
-                                                        viewModel.addToCart(product, 1)
-                                                        scope.launch {
-                                                            snackbarHostState.currentSnackbarData?.dismiss()
-                                                            snackbarHostState.showSnackbar(
-                                                                message = "Produk berhasil dimasukkan ke Cart!",
-                                                                duration = SnackbarDuration.Short
-                                                            )
-                                                        }
-                                                    }
-                                                )
-                                            }
-                                        }
-                                        if (rowProducts.size == 1) {
-                                            Spacer(modifier = Modifier.weight(1f))
-                                        }
-                                    }
-                                    Spacer(modifier = Modifier.height(14.dp))
-                                }
-                            }
+                MartProductSection(
+                    searchQuery = uiState.searchQuery,
+                    products = uiState.products,
+                    groupedProducts = groupedProducts,
+                    onProductClick = onProductClick,
+                    onCategoryPositionCalculated = { category, index ->
+                        categoryPositions[category] = index
+                    },
+                    onAddToCart = { product ->
+                        viewModel.addToCart(product, 1)
+                        snackbarMessage = "Produk berhasil dimasukkan ke Cart!"
+                        showSnackbar = true
+                        scope.launch {
+                            kotlinx.coroutines.delay(1500)
+                            showSnackbar = false
                         }
                     }
-                }
+                )
             }
 
-            // Dynamic Cart Summary
-            AnimatedVisibility(
-                visible = showCartSummary && cartItemCount > 0,
-                enter = slideInVertically { it },
-                exit = slideOutVertically { it },
-                modifier = Modifier.align(Alignment.BottomCenter)
-            ) {
-                Surface(
-                    color = Color(0xFF4CAF50), // Green color
-                    shape = androidx.compose.foundation.shape.RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp),
-                    modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp)
-                ) {
-                    Row(
-                        modifier = Modifier.padding(16.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Text(
-                            text = "Total item di cart: $cartItemCount",
-                            color = Color.White,
-                            fontWeight = FontWeight.Bold
-                        )
-                        Text(
-                            text = "Lihat Keranjang >",
-                            color = Color.White,
-                            modifier = Modifier.clickable { onCartClick() }
-                        )
-                    }
-                }
-            }
+            FloatingCartBar(
+                itemCount = uiState.cartItems.sumOf { it.quantity },
+                totalPrice = uiState.cartItems.sumOf { it.product.price * it.quantity },
+                onCartClick = onCartClick
+            )
         }
     }
 }

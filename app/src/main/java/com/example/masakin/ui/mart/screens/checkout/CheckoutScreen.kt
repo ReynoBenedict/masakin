@@ -21,8 +21,8 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.masakin.R
 import com.example.masakin.ui.mart.components.checkout.CheckoutItemCard
 import com.example.masakin.ui.mart.components.checkout.CheckoutSummaryRow
-import com.example.masakin.ui.mart.screens.checkout.PaymentBottomSheet
-import com.example.masakin.ui.mart.screens.checkout.ShippingBottomSheet
+import com.example.masakin.ui.mart.components.checkout.PaymentBottomSheet
+import com.example.masakin.ui.mart.components.checkout.ShippingBottomSheet
 import com.example.masakin.ui.mart.utils.CurrencyFormatter
 import com.example.masakin.ui.mart.viewmodel.MartViewModel
 
@@ -124,7 +124,7 @@ fun CheckoutScreen(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Icon(
-                            painter = painterResource(id = R.drawable.mart_ic_cat_daging),
+                            painter = painterResource(id = R.drawable.mart_ic_cat_daging), // Using generic icon as placeholder
                             contentDescription = null,
                             modifier = Modifier.size(20.dp),
                             tint = Color(0xFFD32F2F)
@@ -132,19 +132,19 @@ fun CheckoutScreen(
                         Spacer(Modifier.width(8.dp))
                         Column(modifier = Modifier.weight(1f)) {
                             Text(
-                                text = "Rumah Richard",
+                                text = "Rumah", // Static label for now
                                 fontSize = 14.sp,
                                 fontWeight = FontWeight.Bold
                             )
                             Text(
-                                text = "Jl. Tapak Dewandaru no 23, Kasin, Kec Klojen, Kota Malang, Jawa...",
+                                text = uiState.deliveryAddress,
                                 fontSize = 12.sp,
                                 color = Color.Gray,
-                                maxLines = 1
+                                maxLines = 2
                             )
                         }
                         Icon(
-                            painter = painterResource(id = R.drawable.mart_ic_cat_daging),
+                            painter = painterResource(id = R.drawable.mart_ic_cat_daging), // Using generic icon as placeholder
                             contentDescription = "Change",
                             modifier = Modifier.size(20.dp),
                             tint = Color(0xFFD32F2F)
@@ -207,17 +207,17 @@ fun CheckoutScreen(
                                         verticalAlignment = Alignment.CenterVertically
                                     ) {
                                         Text(
-                                            text = "Bebas Ongkir ",
+                                            text = uiState.selectedShipping!!.displayName,
                                             fontSize = 13.sp,
                                             fontWeight = FontWeight.Bold,
                                             color = Color(0xFF111827)
                                         )
+                                        Spacer(Modifier.width(4.dp))
                                         Text(
                                             text = "(Rp ${uiState.selectedShipping!!.price})",
                                             fontSize = 13.sp,
                                             fontWeight = FontWeight.Bold,
-                                            color = Color(0xFF6B7280),
-                                            textDecoration = TextDecoration.LineThrough
+                                            color = Color(0xFF6B7280)
                                         )
                                     }
                                     Text(
@@ -225,23 +225,6 @@ fun CheckoutScreen(
                                         fontSize = 11.sp,
                                         color = Color(0xFF6B7280)
                                     )
-                                    Spacer(Modifier.height(6.dp))
-                                    Row(
-                                        verticalAlignment = Alignment.CenterVertically
-                                    ) {
-                                        Icon(
-                                            painter = painterResource(id = R.drawable.mart_ic_cat_daging),
-                                            contentDescription = null,
-                                            modifier = Modifier.size(14.dp),
-                                            tint = Color(0xFFD32F2F)
-                                        )
-                                        Spacer(Modifier.width(4.dp))
-                                        Text(
-                                            text = "Dapatkan asuransi pengiriman Rp 5.000",
-                                            fontSize = 11.sp,
-                                            color = Color(0xFF6B7280)
-                                        )
-                                    }
                                 }
                             }
                         } else {
@@ -345,6 +328,15 @@ fun CheckoutScreen(
                     label = "Total Biaya Proteksi",
                     value = CurrencyFormatter.formatRupiah(protectionCost)
                 )
+                
+                // Show selected payment method if available
+                if (uiState.selectedPayment != null) {
+                    Spacer(Modifier.height(8.dp))
+                    CheckoutSummaryRow(
+                        label = "Metode Pembayaran",
+                        value = uiState.selectedPayment!!.displayName
+                    )
+                }
 
                 Spacer(Modifier.height(12.dp))
                 HorizontalDivider(color = Color(0xFFE5E7EB))

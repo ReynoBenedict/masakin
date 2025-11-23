@@ -14,8 +14,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -34,16 +36,27 @@ fun OrderScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Riwayat Pesanan", fontWeight = FontWeight.Bold) },
+                title = { 
+                    Text(
+                        "Riwayat Pesanan", 
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 22.sp,
+                        color = Color(0xFF111827)
+                    ) 
+                },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                        Icon(
+                            Icons.AutoMirrored.Filled.ArrowBack, 
+                            contentDescription = "Back",
+                            tint = Color(0xFF111827)
+                        )
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.White)
             )
         },
-        containerColor = Color(0xFFFAFAFA)
+        containerColor = Color(0xFFF9FAFB)
     ) { padding ->
         if (uiState.orders.isEmpty()) {
             Box(
@@ -54,22 +67,22 @@ fun OrderScreen(
             ) {
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     Text(
                         text = "📦",
-                        fontSize = 48.sp
+                        fontSize = 64.sp
                     )
                     Text(
                         text = "Belum ada pesanan",
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Medium,
-                        color = Color(0xFF6B7280)
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = Color(0xFF111827)
                     )
                     Text(
                         text = "Yuk, mulai belanja!",
                         fontSize = 14.sp,
-                        color = Color(0xFF9CA3AF)
+                        color = Color(0xFF6B7280)
                     )
                 }
             }
@@ -77,9 +90,9 @@ fun OrderScreen(
             LazyColumn(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(padding)
-                    .padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
+                    .padding(padding),
+                contentPadding = PaddingValues(16.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 items(uiState.orders.reversed()) { order ->
                     OrderCard(order)
@@ -92,26 +105,37 @@ fun OrderScreen(
 @Composable
 fun OrderCard(order: Order) {
     Card(
-        shape = RoundedCornerShape(12.dp),
+        shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        modifier = Modifier
+            .fillMaxWidth()
+            .shadow(4.dp, RoundedCornerShape(16.dp))
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(16.dp)
         ) {
+            // Header: Order ID and Status
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+                verticalAlignment = Alignment.Top
             ) {
-                Text(
-                    text = order.id,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 14.sp,
-                    color = Color(0xFF111827)
-                )
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = order.id,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 16.sp,
+                        color = Color(0xFF111827)
+                    )
+                    Spacer(modifier = Modifier.height(6.dp))
+                    Text(
+                        text = order.date,
+                        fontSize = 13.sp,
+                        color = Color(0xFF6B7280)
+                    )
+                }
                 
                 val (statusBg, statusText) = when(order.status) {
                     "Selesai" -> Pair(Color(0xFFD1FAE5), Color(0xFF065F46))
@@ -121,51 +145,67 @@ fun OrderCard(order: Order) {
                 
                 Box(
                     modifier = Modifier
-                        .clip(RoundedCornerShape(16.dp))
+                        .clip(RoundedCornerShape(50))
                         .background(statusBg)
-                        .padding(horizontal = 8.dp, vertical = 4.dp)
+                        .padding(horizontal = 12.dp, vertical = 6.dp)
                 ) {
                     Text(
                         text = order.status,
                         color = statusText,
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.Medium
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.Bold
                     )
                 }
             }
             
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(16.dp))
+            HorizontalDivider(color = Color(0xFFE5E7EB), thickness = 1.dp)
+            Spacer(modifier = Modifier.height(16.dp))
+            
+            // Items Summary (2 lines max)
+            Text(
+                text = "Produk yang dibeli:",
+                fontSize = 12.sp,
+                fontWeight = FontWeight.Medium,
+                color = Color(0xFF6B7280)
+            )
+            Spacer(modifier = Modifier.height(6.dp))
             
             val itemsSummary = order.items
                 .take(2)
-                .joinToString(", ") { "${it.product.name} (${it.quantity}x)" }
-            val moreItems = if (order.items.size > 2) " +${order.items.size - 2} lainnya" else ""
+                .joinToString("\n") { "${it.product.name} (${it.quantity}x)" }
+            val moreItems = if (order.items.size > 2) "\n+${order.items.size - 2} produk lainnya" else ""
             
             Text(
                 text = itemsSummary + moreItems,
                 fontSize = 14.sp,
-                color = Color(0xFF6B7280),
-                maxLines = 2
+                color = Color(0xFF111827),
+                lineHeight = 20.sp,
+                maxLines = 3,
+                overflow = TextOverflow.Ellipsis,
+                fontWeight = FontWeight.Medium
             )
             
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(16.dp))
             
+            // Total
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = order.date,
-                    fontSize = 12.sp,
-                    color = Color(0xFF9CA3AF)
+                    text = "Total Belanja",
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Medium,
+                    color = Color(0xFF6B7280)
                 )
                 
                 Text(
                     text = CurrencyFormatter.formatRupiah(order.total),
                     fontWeight = FontWeight.Bold,
-                    fontSize = 14.sp,
-                    color = Color(0xFF111827)
+                    fontSize = 18.sp,
+                    color = Color(0xFFD32F2F)
                 )
             }
         }

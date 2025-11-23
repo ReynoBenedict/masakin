@@ -62,7 +62,7 @@ fun MartDagingScreen(
                 deliveryAddress = uiState.deliveryAddress,
                 searchText = uiState.searchQuery,
                 isLoadingLocation = uiState.isLoadingLocation,
-                onSearchChange = { query -> viewModel.onSearchQueryChanged(query) },
+                onSearchChange = { query -> viewModel.updateSearchQuery(query) },
                 onLocationClick = {
                     showLocationDialog = true
                 },
@@ -84,7 +84,7 @@ fun MartDagingScreen(
             // Category Row
             MartCategoryRow(
                 selectedCategory = uiState.selectedCategory,
-                onCategorySelected = { category -> viewModel.onCategorySelected(category) }
+                onCategorySelected = { category -> viewModel.selectCategory(category) }
             )
 
             Spacer(Modifier.height(16.dp))

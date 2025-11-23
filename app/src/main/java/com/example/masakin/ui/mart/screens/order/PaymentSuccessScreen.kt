@@ -94,7 +94,7 @@ fun PaymentSuccessScreen(
                     )
                 }
 
-                Divider(color = Color(0xFFE5E7EB))
+                HorizontalDivider(color = Color(0xFFE5E7EB))
 
                 Row(
                     modifier = Modifier.fillMaxWidth(),

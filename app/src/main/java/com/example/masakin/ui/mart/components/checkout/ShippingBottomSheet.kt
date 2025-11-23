@@ -1,4 +1,4 @@
-package com.example.masakin.ui.mart.screens.checkout
+package com.example.masakin.ui.mart.components.checkout
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*

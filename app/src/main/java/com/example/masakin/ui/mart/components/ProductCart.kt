@@ -88,7 +88,7 @@ fun ProductCard(
 }
 
 private fun formatRupiah(amount: Int): String {
-    val localeID = Locale("id", "ID")
+    val localeID = Locale.forLanguageTag("id-ID")
     val numberFormat = NumberFormat.getCurrencyInstance(localeID)
     numberFormat.maximumFractionDigits = 0
     return numberFormat.format(amount).replace("Rp", "Rp ")

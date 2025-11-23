@@ -186,7 +186,7 @@ object ProductRepository {
         )
     )
 
-    fun getProductsByCategory(category: ProductCategory): List<Product> {
+    fun getProductsByCategory(category: ProductCategory?): List<Product> {
         return allProducts.filter { it.category == category }
     }
 

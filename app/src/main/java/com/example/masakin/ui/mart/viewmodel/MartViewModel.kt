@@ -7,6 +7,7 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.masakin.ui.mart.data.CartItem
+import com.example.masakin.ui.mart.data.OrderRepository
 import com.example.masakin.ui.mart.data.Product
 import com.example.masakin.ui.mart.data.ProductCategory
 import com.example.masakin.ui.mart.data.ProductRepository
@@ -18,60 +19,40 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-
-
-data class Order(
-    val id: String,
-    val date: String,
-    val status: String,
-    val total: Int,
-    val items: List<CartItem>,
-    val paymentMethod: PaymentMethod?,
-    val shippingMethod: ShippingMethod?
-)
-data class MartUiState(
-    val selectedCategory: ProductCategory = ProductCategory.DAGING,
-    val products: List<Product> = emptyList(),
-    val searchQuery: String = "",
-    val deliveryAddress: String = "Malang, Jawa Timur",
-    val latitude: Double? = null,
-    val longitude: Double? = null,
-    val isLoadingLocation: Boolean = false,
-    val locationError: String? = null,
-    val selectedProduct: Product? = null,
-    val cartItems: List<CartItem> = emptyList(),
-    val selectedCartItems: Set<Int> = emptySet(),
-    val selectedShipping: ShippingMethod? = null,
-    val selectedPayment: PaymentMethod? = null,
-    val orders: List<Order> = emptyList(),
-    val lastCreatedOrderId: String? = null
-)
-
-enum class ShippingMethod(val displayName: String, val price: Int, val estimatedDays: String) {
-    REGULAR("Pengiriman Reguler", 10000, "10 - 13 Agustus"),
-    PREMIUM("Pengiriman Premium", 20000, "10 - 12 Agustus")
-}
-
-enum class PaymentMethod(val displayName: String, val details: String) {
-    CREDIT_CARD("Kartu Kredit", "**** 6754"),
-    BANK_BCA("Bank BCA", "**2123424343"),
-    CASH("Tunai", "")
-}
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 class MartViewModel : ViewModel() {
+
     private val _uiState = MutableStateFlow(MartUiState())
     val uiState: StateFlow<MartUiState> = _uiState.asStateFlow()
 
     init {
+        // Initial load
         loadProducts(ProductCategory.DAGING)
+        // Load orders from repository
+        _uiState.update { it.copy(orders = OrderRepository.getOrders()) }
     }
 
-    fun onCategorySelected(category: ProductCategory) {
+    // --- Product & Category Logic ---
+
+    fun selectCategory(category: ProductCategory) {
         _uiState.update { it.copy(selectedCategory = category) }
         loadProducts(category)
     }
 
-    fun onSearchQueryChanged(query: String) {
+    private fun loadProducts(category: ProductCategory?) {
+        val products = ProductRepository.getProductsByCategory(category)
+        _uiState.update { it.copy(products = products) }
+    }
+
+    fun loadProductDetail(productId: Int) {
+        val product = ProductRepository.getProductById(productId)
+        _uiState.update { it.copy(selectedProduct = product) }
+    }
+
+    fun updateSearchQuery(query: String) {
         _uiState.update { it.copy(searchQuery = query) }
         if (query.isNotEmpty()) {
             val filtered = ProductRepository.searchProducts(query)
@@ -81,21 +62,9 @@ class MartViewModel : ViewModel() {
         }
     }
 
-    private fun loadProducts(category: ProductCategory) {
-        val products = ProductRepository.getProductsByCategory(category)
-        _uiState.update { it.copy(products = products) }
-    }
-    
-    fun loadProductDetail(productId: Int) {
-        val product = ProductRepository.getProductById(productId)
-        _uiState.update { it.copy(selectedProduct = product) }
-    }
+    // --- Cart Logic ---
 
-    fun loadProductById(id: Int) {
-        loadProductDetail(id)
-    }
-
-    fun addToCart(product: Product, quantity: Int) {
+    fun addToCart(product: Product, quantity: Int = 1) {
         _uiState.update { currentState ->
             val existingItem = currentState.cartItems.find { it.product.id == product.id }
             val updatedItems = if (existingItem != null) {
@@ -111,22 +80,24 @@ class MartViewModel : ViewModel() {
             }
             currentState.copy(cartItems = updatedItems)
         }
+        calculateCheckoutTotals()
     }
 
-    fun removeFromCart(productId: Int) {
+    fun removeFromCart(product: Product) {
         _uiState.update { currentState ->
-            currentState.copy(cartItems = currentState.cartItems.filter { it.product.id != productId })
+            currentState.copy(cartItems = currentState.cartItems.filter { it.product.id != product.id })
         }
+        calculateCheckoutTotals()
     }
 
-    fun updateCartQuantity(productId: Int, newQuantity: Int) {
+    fun updateCartQuantity(product: Product, newQuantity: Int) {
         if (newQuantity <= 0) {
-            removeFromCart(productId)
+            removeFromCart(product)
             return
         }
         _uiState.update { currentState ->
             val updatedItems = currentState.cartItems.map {
-                if (it.product.id == productId) {
+                if (it.product.id == product.id) {
                     it.copy(quantity = newQuantity)
                 } else {
                     it
@@ -134,99 +105,123 @@ class MartViewModel : ViewModel() {
             }
             currentState.copy(cartItems = updatedItems)
         }
+        calculateCheckoutTotals()
     }
 
-    fun toggleCartItemSelection(productId: Int) {
+    fun toggleCartItemSelection(product: Product) {
         _uiState.update { currentState ->
-            val selected = currentState.selectedCartItems.toMutableSet()
-            if (selected.contains(productId)) {
-                selected.remove(productId)
+            val selected = currentState.selectedCartItems.toMutableList()
+            if (selected.contains(product.id)) {
+                selected.remove(product.id)
             } else {
-                selected.add(productId)
+                selected.add(product.id)
             }
             currentState.copy(selectedCartItems = selected)
         }
+        calculateCheckoutTotals()
     }
 
     fun selectAllCartItems(select: Boolean) {
         _uiState.update { currentState ->
             val selected = if (select) {
-                currentState.cartItems.map { it.product.id }.toSet()
+                currentState.cartItems.map { it.product.id }
             } else {
-                emptySet()
+                emptyList()
             }
             currentState.copy(selectedCartItems = selected)
         }
+        calculateCheckoutTotals()
     }
 
-    fun getCartTotal(): Int {
-        return _uiState.value.cartItems.sumOf { it.product.price * it.quantity }
+    // --- Checkout Logic ---
+
+    fun selectShipping(option: ShippingMethod) {
+        _uiState.update { it.copy(selectedShipping = option) }
+        calculateCheckoutTotals()
     }
 
-    fun getSelectedCartTotal(): Int {
-        return _uiState.value.cartItems
-            .filter { _uiState.value.selectedCartItems.contains(it.product.id) }
-            .sumOf { it.product.price * it.quantity }
-    }
+    fun selectShippingMethod(option: ShippingMethod) = selectShipping(option)
 
-    fun selectShippingMethod(method: ShippingMethod) {
-        _uiState.update { it.copy(selectedShipping = method) }
-    }
-
-    fun selectPaymentMethod(method: PaymentMethod) {
+    fun selectPayment(method: PaymentMethod) {
         _uiState.update { it.copy(selectedPayment = method) }
     }
 
-    fun getShippingCost(): Int {
-        return _uiState.value.selectedShipping?.price ?: 0
-    }
+    fun selectPaymentMethod(method: PaymentMethod) = selectPayment(method)
 
-    fun getInsuranceCost(): Int {
-        return if ((_uiState.value.selectedShipping?.price ?: 0) > 0) 5000 else 0
+    private fun calculateCheckoutTotals() {
+        _uiState.update { currentState ->
+            val selectedItems = currentState.cartItems.filter { currentState.selectedCartItems.contains(it.product.id) }
+            val subtotal = selectedItems.sumOf { it.product.price * it.quantity }
+            val shippingCost = currentState.selectedShipping?.price ?: 0
+            val insurance = if (shippingCost > 0) 5000 else 0
+            
+            currentState.copy(
+                checkoutSubtotal = subtotal,
+                checkoutShippingCost = shippingCost,
+                checkoutInsurance = insurance
+            )
+        }
     }
-    fun getProtectionCost(): Int {
-        return 3000  // CHANGE FROM 5000
-    }
-    fun getSubtotal(): Int {
-        return getSelectedCartTotal()
-    }
+    
+    fun getSubtotal(): Int = _uiState.value.checkoutSubtotal
+    
+    fun getShippingCost(): Int = _uiState.value.checkoutShippingCost
+    
+    fun getInsuranceCost(): Int = _uiState.value.checkoutInsurance
+    
+    fun getProtectionCost(): Int = _uiState.value.checkoutProtection
+    
     fun getCheckoutTotal(): Int {
-        return getSubtotal() + getShippingCost() + getInsuranceCost() + getProtectionCost()
+        val state = _uiState.value
+        return state.checkoutSubtotal + state.checkoutShippingCost + state.checkoutInsurance + state.checkoutProtection
     }
 
     fun createOrder() {
+        val currentState = _uiState.value
         val orderId = "ORD-${System.currentTimeMillis().toString().takeLast(6)}"
-        val selectedItems = _uiState.value.cartItems
-            .filter { _uiState.value.selectedCartItems.contains(it.product.id) }
-
+        
+        val selectedItems = currentState.cartItems.filter { currentState.selectedCartItems.contains(it.product.id) }
+        
         if (selectedItems.isEmpty()) return
 
         val newOrder = Order(
             id = orderId,
-            date = getCurrentDate(),
+            date = SimpleDateFormat("dd MMM yyyy, HH:mm", Locale.forLanguageTag("id-ID")).format(Date()),
             status = "Selesai",
             total = getCheckoutTotal(),
             items = selectedItems,
-            paymentMethod = _uiState.value.selectedPayment,
-            shippingMethod = _uiState.value.selectedShipping
+            subtotal = getSubtotal(),
+            shippingCost = getShippingCost(),
+            insuranceCost = getInsuranceCost(),
+            protectionCost = getProtectionCost(),
+            paymentMethod = currentState.selectedPayment,
+            shippingMethod = currentState.selectedShipping,
+            address = currentState.deliveryAddress
         )
 
-        _uiState.update {
-            it.copy(
-                orders = it.orders + newOrder,
+        // Save to repository
+        OrderRepository.addOrder(newOrder)
+
+        // Update state: clear purchased items, reset selection, update order list
+        _uiState.update { state ->
+            state.copy(
+                orders = OrderRepository.getOrders(),
+                cartItems = state.cartItems.filter { !state.selectedCartItems.contains(it.product.id) },
+                selectedCartItems = emptyList(),
                 lastCreatedOrderId = orderId,
-                cartItems = it.cartItems.filterNot { item ->
-                    it.selectedCartItems.contains(item.product.id)
-                },
-                selectedCartItems = emptySet(),
+                selectedPayment = null,
                 selectedShipping = null,
-                selectedPayment = null
+                checkoutSubtotal = 0,
+                checkoutShippingCost = 0
             )
         }
     }
-    private fun getCurrentDate(): String {
-        val formatter = java.text.SimpleDateFormat("dd MMM yyyy", java.util.Locale("id", "ID"))
-        return formatter.format(java.util.Date())
+
+    // --- Location Logic ---
+
+    fun updateDeliveryAddress() {
+        // This might be triggered manually or via location update
+        // For now, it's handled by requestLocationUpdate
     }
 
     fun requestLocationUpdate(

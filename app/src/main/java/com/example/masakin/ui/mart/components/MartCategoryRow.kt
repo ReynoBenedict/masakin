@@ -20,7 +20,7 @@ import com.example.masakin.ui.mart.data.ProductCategory
 
 @Composable
 fun MartCategoryRow(
-    selectedCategory: ProductCategory,
+    selectedCategory: ProductCategory?,
     onCategorySelected: (ProductCategory) -> Unit,
     modifier: Modifier = Modifier
 ) {
