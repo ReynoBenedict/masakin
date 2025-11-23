@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
@@ -29,7 +30,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.SegmentedButtonDefaults.Icon
+import androidx.compose.material3.Icon
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -38,7 +39,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -61,8 +61,7 @@ import androidx.compose.ui.Alignment
 import com.example.masakin.ui.theme.Grey10
 import com.example.masakin.ui.theme.Grey30
 
-
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun HomeScreen(
     onOpenChatbot: () -> Unit = {},
@@ -274,21 +273,26 @@ fun HomeScreen(
                 Spacer(modifier = Modifier.height(24.dp))
             }
 
-            // Popular Product Section
+            data class Product(
+                val name: String,
+                val price: String,
+                val sold: String,
+                val imageRes: Int
+            )
 
+            // Popular Product Section
             val products = listOf(
-                Triple("Bumbu Masak", "Rp20.000", "12 RB terjual"),
-                Triple("Mie Kimbo", "Rp5.000", "4.5 RB terjual"),
-                Triple("Susu Murni", "Rp15.000", "9.6 RB terjual"),
-                Triple("Daging Burger", "Rp45.000", "12 RB terjual")
+                Product("Garam", "Rp20.000", "12 RB terjual", R.drawable.garam),
+                Product("Mie Kimbo", "Rp5.000", "4.5 RB terjual", R.drawable.mie),
+                Product("Susu UltraMilk", "Rp15.000", "9.6 RB terjual", R.drawable.susu),
+                Product("Daging Burger", "Rp45.000", "12 RB terjual", R.drawable.daging)
             )
 
             item {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(start = 20.dp, end = 20.dp)
-                    ,
+                        .padding(start = 20.dp, end = 20.dp),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
@@ -321,9 +325,10 @@ fun HomeScreen(
                             rowItems.forEach { product ->
                                 Box(modifier = Modifier.weight(1f)) { // weight(1f) agar lebar terbagi rata 50:50
                                     ProductCard(
-                                        productName = product.first,
-                                        price = product.second,
-                                        sold = product.third
+                                        productName = product.name,
+                                        price = product.price,
+                                        sold = product.sold,
+                                        imageRes = product.imageRes
                                     )
                                 }
                             }
@@ -359,15 +364,37 @@ fun HomeScreen(
                 Spacer(modifier = Modifier.height(12.dp))
             }
 
-            // Recipe Cards
-            items(3) { index ->
+            // --- NEW: Recipe data class + list (gunakan drawable Anda) ---
+            data class Recipe(
+                val name: String,
+                val author: String,
+                val imageRes: Int
+            )
+
+            val recipes = listOf(
+                Recipe(
+                    "Empuk, Meresap, Tahan Lama! Resep Rendang Daging",
+                    "Devina Hermawan",
+                    R.drawable.rendang // ganti dengan resource Anda
+                ),
+                Recipe(
+                    "Gurih Berempah! Resep Sate Padang",
+                    "Juna Rorimpandey",
+                    R.drawable.sate_padang
+                ),
+                Recipe(
+                    "Tanpa Ungkep! Tapi Enak! Resep Ayam Goreng Bawang",
+                    "Benedict Khoelieck",
+                    R.drawable.ayam_goreng
+                )
+            )
+
+            // Recipe Cards menggunakan items(recipes)
+            items(recipes) { recipe ->
                 RecipeCard(
-                    recipeName = if (index == 0) "Empuk, Meresap, Tahan Lama! Resep Rendang Daging"
-                    else if (index == 1) "Gurih Berempah! Resep Sate Padang"
-                    else "Tanpa Ungkep! Tapi Enak! Resep Ayam Goreng Bawang",
-                    author = if (index == 0) "Devina Hermawan"
-                    else if (index == 1) "Juna Rorimpandey"
-                    else "Benedict Khoelieck"
+                    recipeName = recipe.name,
+                    author = recipe.author,
+                    imageRes = recipe.imageRes
                 )
                 Spacer(modifier = Modifier.height(12.dp))
             }
@@ -387,15 +414,14 @@ fun HomeScreen(
     }
 }
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun AutoSlidingBannerSection() {
     // Daftar banner - ganti dengan gambar dari resource Anda
     val banners = listOf(
-        BannerData("Banner 1", Color(0xFFFFC107)),
-        BannerData("Banner 2", Color(0xFFFF5722)),
-        BannerData("Banner 3", Color(0xFF4CAF50)),
-        BannerData("Banner 4", Color(0xFF2196F3))
+        BannerData("Banner 1", R.drawable.banner_1),
+        BannerData("Banner 2", R.drawable.banner_2),
+        BannerData("Banner 3", R.drawable.banner_3),
+        BannerData("Banner 4", R.drawable.banner_4)
     )
 
     val pagerState = rememberPagerState(
@@ -404,12 +430,14 @@ fun AutoSlidingBannerSection() {
     )
     val coroutineScope = rememberCoroutineScope()
 
-    // Auto-slide effect
-    LaunchedEffect(pagerState.currentPage) {
-        delay(3000) // Delay 3 detik
-        val nextPage = (pagerState.currentPage + 1) % banners.size
-        coroutineScope.launch {
-            pagerState.animateScrollToPage(nextPage)
+    // Auto-slide effect: menggunakan LaunchedEffect(Unit) agar stabil
+    LaunchedEffect(Unit) {
+        while (true) {
+            delay(3000L)
+            val nextPage = (pagerState.currentPage + 1) % banners.size
+            coroutineScope.launch {
+                pagerState.animateScrollToPage(nextPage)
+            }
         }
     }
 
@@ -427,24 +455,22 @@ fun AutoSlidingBannerSection() {
                 modifier = Modifier
                     .fillMaxSize()
                     .clip(RoundedCornerShape(12.dp))
-                    .background(banners[page].backgroundColor)
             ) {
-                // Placeholder - ganti dengan Image dari resource
-                // Contoh:
-                // Image(
-                //     painter = painterResource(id = R.drawable.banner_1),
-                //     contentDescription = "Banner ${page + 1}",
-                //     modifier = Modifier.fillMaxSize(),
-                //     contentScale = ContentScale.Crop
-                // )
-
-                Text(
-                    text = banners[page].title,
-                    modifier = Modifier.align(Alignment.Center),
-                    style = MaterialTheme.typography.titleLarge,
-                    color = Color.White,
-                    fontWeight = FontWeight.Bold
+                // Tampilkan gambar banner dari drawable
+                Image(
+                    painter = painterResource(id = banners[page].imageRes),
+                    contentDescription = banners[page].title,
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = ContentScale.Crop
                 )
+
+                // Optional: overlay dan judul di tengah
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(Color.Black.copy(alpha = 0.18f))
+                )
+
             }
         }
 
@@ -474,7 +500,7 @@ fun AutoSlidingBannerSection() {
 
 data class BannerData(
     val title: String,
-    val backgroundColor: Color
+    val imageRes: Int,
 )
 
 @Composable
@@ -515,7 +541,8 @@ fun MenuButton(
 fun ProductCard(
     productName: String,
     price: String,
-    sold: String
+    sold: String,
+    imageRes: Int
 ) {
     Card(
         modifier = Modifier
@@ -526,16 +553,20 @@ fun ProductCard(
         elevation = CardDefaults.cardElevation(2.dp)
     ) {
         Column(modifier = Modifier.fillMaxSize()) {
-            Box(
+
+            // FOTO PRODUK
+            Image(
+                painter = painterResource(id = imageRes),
+                contentDescription = productName,
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(120.dp)
-                    .background(Color(0xFFFFE5E5)),
-                contentAlignment = Alignment.Center
-            ) {
-                // Placeholder - ganti dengan Image produk dari resource
-                Text("🍲", fontSize = 40.sp)
-            }
+                    .background(Color(0xFFFFE5E5))
+                    .clip(RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp)),
+                contentScale = ContentScale.Crop
+            )
+
+            // INFORMASI PRODUK
             Column(
                 modifier = Modifier
                     .fillMaxSize()
@@ -568,7 +599,8 @@ fun ProductCard(
 @Composable
 fun RecipeCard(
     recipeName: String,
-    author: String
+    author: String,
+    imageRes: Int
 ) {
     Card(
         modifier = Modifier
@@ -579,18 +611,22 @@ fun RecipeCard(
         colors = CardDefaults.cardColors(containerColor = Color.Transparent)
     ) {
         Box(modifier = Modifier.fillMaxSize()) {
-            // Background image placeholder
-            Box(
+            // Background image
+            Image(
+                painter = painterResource(id = imageRes),
+                contentDescription = recipeName,
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(Color(0xFF8B4513))
+                    .clip(RoundedCornerShape(16.dp)),
+                contentScale = ContentScale.Crop
             )
 
             // Dark overlay
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(Color.Black.copy(alpha = 0.3f))
+                    .clip(RoundedCornerShape(16.dp))
+                    .background(Color.Black.copy(alpha = 0.32f))
             )
 
             // Content
@@ -604,7 +640,8 @@ fun RecipeCard(
                     text = recipeName,
                     color = Color.White,
                     fontWeight = FontWeight.Bold,
-                    fontSize = 16.sp
+                    fontSize = 16.sp,
+                    maxLines = 2
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 Row(verticalAlignment = Alignment.CenterVertically) {

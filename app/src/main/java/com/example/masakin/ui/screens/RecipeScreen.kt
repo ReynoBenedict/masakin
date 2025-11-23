@@ -23,13 +23,15 @@ import androidx.compose.ui.tooling.preview.Preview
 @Composable
 fun RecipeRoute(
     viewModel: RecipeViewModel,
-    onBack: () -> Unit
+    onBack: () -> Unit,
+    onOpenDetail: (String) -> Unit
 ) {
     val ui by viewModel.ui.collectAsStateWithLifecycle()
     RecipeScreen(
         ui = ui,
         onQueryChange = viewModel::updateQuery,
-        onBack = onBack
+        onBack = onBack,
+        onOpenDetail = onOpenDetail
     )
 }
 
@@ -37,7 +39,8 @@ fun RecipeRoute(
 private fun RecipeScreen(
     ui: RecipeUiState,
     onQueryChange: (String) -> Unit,
-    onBack: () -> Unit
+    onBack: () -> Unit,
+    onOpenDetail: (String) -> Unit
 ) {
     val featuredState = rememberLazyListState()
     val selectedIndex by remember { derivedStateOf { featuredState.firstVisibleItemIndex } }
@@ -104,7 +107,8 @@ private fun RecipeScreen(
                     title = category,
                     recipes = list,
                     onSeeMore = { /* TODO */ },
-                    accentRed = RecipeRed
+                    accentRed = RecipeRed,
+                    onRecipeClick = onOpenDetail
                 )
             }
         }

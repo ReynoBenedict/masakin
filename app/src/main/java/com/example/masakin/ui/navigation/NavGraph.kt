@@ -12,6 +12,7 @@ import com.example.masakin.ui.community.CommunityRoute
 import com.example.masakin.ui.mart.navigation.MartNavGraph
 import com.example.masakin.ui.recipe.RecipeViewModel
 import com.example.masakin.ui.screens.*
+import com.example.masakin.ui.screens.recipe.RecipeDetailRoute
 
 object Routes {
     const val ONBOARDING = "onboarding"
@@ -34,6 +35,9 @@ object Routes {
     const val APPOINTMENT = "appointment/{consultantId}"
     const val CHAT_SCREEN_2 = "chat_screen_2/{consultantId}"
 
+    const val RECIPE_DETAIL = "recipe_detail/{recipeId}"
+
+    fun recipeDetailRoute(id: String) = "recipe_detail/$id"
 
     fun appointmentRoute(consultantId: String) = "appointment/$consultantId"
     fun chatScreen2Route(consultantId: String) = "chat_screen_2/$consultantId"
@@ -208,6 +212,21 @@ fun MasakinNavGraph(
         composable(Routes.RECIPE) { backStackEntry ->
             val vm: RecipeViewModel = viewModel(backStackEntry)
             RecipeRoute(
+                viewModel = vm,
+                onBack = { navController.popBackStack() },
+                onOpenDetail = { recipeId ->
+                    navController.navigate(Routes.recipeDetailRoute(recipeId))
+                }
+            )
+        }
+        composable(
+            route = Routes.RECIPE_DETAIL,
+            arguments = listOf(navArgument("recipeId") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val vm: com.example.masakin.ui.recipe.RecipeViewModel = viewModel(backStackEntry)
+            val id = backStackEntry.arguments?.getString("recipeId") ?: ""
+            RecipeDetailRoute(
+                recipeId = id,
                 viewModel = vm,
                 onBack = { navController.popBackStack() }
             )

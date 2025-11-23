@@ -1,5 +1,6 @@
 package com.example.masakin.ui.recipe
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -17,12 +18,12 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import coil.compose.AsyncImage
 
 // Aksen merah default (bisa di-override dari Screen)
 val RecipeRed = Color(0xFFE53935)
@@ -83,7 +84,6 @@ fun FeaturedCarousel(
 fun FeaturedCard(
     recipe: Recipe,
     cardWidth: Dp,
-
 ) {
     Surface(
         tonalElevation = 2.dp,
@@ -94,9 +94,9 @@ fun FeaturedCard(
     ) {
         Column {
             Box {
-                AsyncImage(
-                    model = recipe.imageUrl,
-                    contentDescription = recipe.title,
+                Image(
+                    painter = painterResource(id = recipe.imageRes),
+                    contentDescription = recipe.name,
                     contentScale = ContentScale.Crop,
                     modifier = Modifier
                         .fillMaxWidth()
@@ -111,7 +111,7 @@ fun FeaturedCard(
             }
             Column(Modifier.padding(12.dp)) {
                 Text(
-                    recipe.title,
+                    recipe.name,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                     fontSize = MaterialTheme.typography.bodySmall.fontSize,
@@ -119,7 +119,7 @@ fun FeaturedCard(
                 )
                 Spacer(Modifier.height(4.dp))
                 Text(
-                    "${recipe.minutes} Menit",
+                    "${recipe.servings} Menit",
                     color = Color(0xFF9E9E9E),
                     fontSize = MaterialTheme.typography.labelSmall.fontSize
                 )
@@ -223,9 +223,9 @@ fun SmallRecipeCard(recipe: Recipe) {
         modifier = Modifier.width(180.dp)
     ) {
         Column {
-            AsyncImage(
-                model = recipe.imageUrl,
-                contentDescription = recipe.title,
+            Image(
+                painter = painterResource(id = recipe.imageRes),
+                contentDescription = recipe.name,
                 contentScale = ContentScale.Crop,
                 modifier = Modifier
                     .fillMaxWidth()
@@ -233,7 +233,7 @@ fun SmallRecipeCard(recipe: Recipe) {
             )
             Column(Modifier.padding(10.dp)) {
                 Text(
-                    recipe.title,
+                    recipe.name,
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis,
                     fontWeight = FontWeight.Medium,
@@ -242,7 +242,7 @@ fun SmallRecipeCard(recipe: Recipe) {
                 Spacer(Modifier.height(6.dp))
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     Text("★ ${recipe.rating}", color = Color(0xFF666666), style = MaterialTheme.typography.labelSmall)
-                    Text("${recipe.minutes} mnt", color = Color(0xFF888888), style = MaterialTheme.typography.labelSmall)
+                    Text("${recipe.servings} mnt", color = Color(0xFF888888), style = MaterialTheme.typography.labelSmall)
                 }
             }
         }
