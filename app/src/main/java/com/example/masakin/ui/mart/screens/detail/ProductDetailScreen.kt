@@ -89,7 +89,7 @@ fun ProductDetailScreen(
                 onAddToCart = {
                     viewModel.addToCart(product, 1)
                     scope.launch {
-                        snackbarHostState.showSnackbar("Berhasil ditambahkan ke keranjang")
+                        snackbarHostState.showSnackbar("Produk berhasil dimasukkan ke Cart!")
                     }
                 },
                 onChatClick = { /* Chat */ },

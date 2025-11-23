@@ -13,4 +13,5 @@ sealed class MartRoute(val route: String) {
     object Cart : MartRoute("mart_cart")
     object Checkout : MartRoute("mart_checkout")
     object Order : MartRoute("mart_order")
+    object PaymentSuccess : MartRoute("mart_payment_success")
 }

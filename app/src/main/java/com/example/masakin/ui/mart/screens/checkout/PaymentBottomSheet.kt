@@ -11,11 +11,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.masakin.R
 import com.example.masakin.ui.mart.viewmodel.PaymentMethod
 
 @Composable
@@ -38,10 +36,15 @@ fun PaymentBottomSheet(
             Text(
                 text = "Pilih Metode Pembayaran",
                 fontSize = 18.sp,
-                fontWeight = FontWeight.Bold
+                fontWeight = FontWeight.Bold,
+                color = Color(0xFF111827)
             )
             IconButton(onClick = onDismiss) {
-                Icon(Icons.Default.Close, contentDescription = "Close")
+                Icon(
+                    Icons.Default.Close,
+                    contentDescription = "Close",
+                    tint = Color(0xFF111827)
+                )
             }
         }
         
@@ -61,23 +64,25 @@ fun PaymentBottomSheet(
         Card(
             modifier = Modifier.fillMaxWidth(),
             colors = CardDefaults.cardColors(containerColor = Color(0xFFD1FAE5)),
-            elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+            elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+            shape = RoundedCornerShape(8.dp)
         ) {
             Row(
                 modifier = Modifier.padding(12.dp),
-                verticalAlignment = Alignment.CenterVertically
+                verticalAlignment = Alignment.Top
             ) {
-                Icon(
-                    painter = painterResource(id = R.drawable.mart_ic_cat_daging),
-                    contentDescription = null,
-                    modifier = Modifier.size(20.dp),
-                    tint = Color(0xFF10B981)
+                Text(
+                    text = "✓",
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color(0xFF10B981),
+                    modifier = Modifier.padding(end = 8.dp)
                 )
-                Spacer(Modifier.width(8.dp))
                 Text(
                     text = "Kami akan melindungi data anda\ndan tidak akan kami jual data anda",
                     fontSize = 11.sp,
-                    color = Color(0xFF065F46)
+                    color = Color(0xFF065F46),
+                    lineHeight = 16.sp
                 )
             }
         }
@@ -96,7 +101,8 @@ fun PaymentBottomSheet(
             Text(
                 text = "Lanjut",
                 color = Color.White,
-                fontWeight = FontWeight.Bold
+                fontWeight = FontWeight.Bold,
+                fontSize = 16.sp
             )
         }
     }
@@ -113,7 +119,8 @@ private fun PaymentMethodOption(
             .fillMaxWidth()
             .clickable(onClick = onClick),
         colors = CardDefaults.cardColors(containerColor = Color.White),
-        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+        shape = RoundedCornerShape(8.dp)
     ) {
         Row(
             modifier = Modifier
@@ -121,10 +128,10 @@ private fun PaymentMethodOption(
                 .padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Icon placeholder
+            // Icon placeholder with brand colors
             Box(
                 modifier = Modifier
-                    .size(48.dp)
+                    .size(56.dp)
                     .background(
                         when (method) {
                             PaymentMethod.CREDIT_CARD -> Color(0xFF1A1F71)
@@ -139,27 +146,28 @@ private fun PaymentMethodOption(
                     text = when (method) {
                         PaymentMethod.CREDIT_CARD -> "VISA"
                         PaymentMethod.BANK_BCA -> "BCA"
-                        else -> "💵"
+                        PaymentMethod.CASH -> "💵"
                     },
                     color = if (method == PaymentMethod.CASH) Color(0xFF92400E) else Color.White,
-                    fontSize = 12.sp,
+                    fontSize = 14.sp,
                     fontWeight = FontWeight.Bold
                 )
             }
 
-            Spacer(Modifier.width(12.dp))
+            Spacer(Modifier.width(16.dp))
 
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = method.displayName,
                     fontSize = 14.sp,
-                    fontWeight = FontWeight.Bold
+                    fontWeight = FontWeight.Bold,
+                    color = Color(0xFF111827)
                 )
                 if (method.details.isNotEmpty()) {
                     Text(
                         text = method.details,
                         fontSize = 12.sp,
-                        color = Color.Gray
+                        color = Color(0xFF6B7280)
                     )
                 }
             }
@@ -167,7 +175,10 @@ private fun PaymentMethodOption(
             RadioButton(
                 selected = isSelected,
                 onClick = onClick,
-                colors = RadioButtonDefaults.colors(selectedColor = Color(0xFFD32F2F))
+                colors = RadioButtonDefaults.colors(
+                    selectedColor = Color(0xFFD32F2F),
+                    unselectedColor = Color(0xFF6B7280)
+                )
             )
         }
     }

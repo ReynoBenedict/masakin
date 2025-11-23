@@ -14,6 +14,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -29,6 +30,7 @@ import com.example.masakin.ui.mart.viewmodel.MartViewModel
 @Composable
 fun CheckoutScreen(
     onBack: () -> Unit,
+    onPaymentSuccess: () -> Unit,
     viewModel: MartViewModel = viewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -36,8 +38,9 @@ fun CheckoutScreen(
     var showPaymentModal by remember { mutableStateOf(false) }
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     
-    val selectedTotal = viewModel.getSelectedCartTotal()
+    val subtotal = viewModel.getSubtotal()
     val shippingCost = viewModel.getShippingCost()
+    val insuranceCost = viewModel.getInsuranceCost()
     val protectionCost = viewModel.getProtectionCost()
     val totalCost = viewModel.getCheckoutTotal()
 
@@ -69,31 +72,24 @@ fun CheckoutScreen(
                         if (uiState.selectedPayment == null) {
                             showPaymentModal = true
                         } else {
-                            /* Place order - would trigger order placement */
+                            viewModel.createOrder()
+                            onPaymentSuccess()
                         }
                     },
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(64.dp)
-                        .padding(16.dp),
+                        .padding(16.dp)
+                        .height(48.dp),
                     shape = RoundedCornerShape(8.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFD32F2F))
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFD32F2F)),
+                    enabled = uiState.selectedShipping != null
                 ) {
-                    if (uiState.selectedPayment != null) {
-                        Text(
-                            text = "Buat Pesanan",
-                            color = Color.White,
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 16.sp
-                        )
-                    } else {
-                        Text(
-                            text = "Pilih Pembayaran",
-                            color = Color.White,
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 16.sp
-                        )
-                    }
+                    Text(
+                        text = if (uiState.selectedPayment != null) "Buat Pesanan" else "Pilih Pembayaran",
+                        color = Color.White,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 16.sp
+                    )
                 }
             }
         },
@@ -158,14 +154,122 @@ fun CheckoutScreen(
                 Spacer(Modifier.height(16.dp))
             }
 
-            // Checkout items
-            items(uiState.cartItems.filter { uiState.selectedCartItems.contains(it.product.id) }) { cartItem ->
-                CheckoutItemCard(
-                    cartItem = cartItem,
-                    selectedShipping = uiState.selectedShipping,
-                    onSelectShipping = { showShippingModal = true },
-                    modifier = Modifier.padding(vertical = 4.dp)
-                )
+            // Store Section (One Card for all items)
+            item {
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CardDefaults.cardColors(containerColor = Color.White),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    Column(modifier = Modifier.padding(12.dp)) {
+                        // Store Header
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.mart_ic_cat_daging),
+                                contentDescription = null,
+                                modifier = Modifier.size(14.dp),
+                                tint = Color(0xFFD32F2F)
+                            )
+                            Spacer(Modifier.width(4.dp))
+                            Text(
+                                text = "Selvi's Mart",
+                                fontSize = 11.sp,
+                                color = Color(0xFF6B7280)
+                            )
+                        }
+                        
+                        Spacer(Modifier.height(8.dp))
+
+                        // Items
+                        val selectedItems = uiState.cartItems.filter { uiState.selectedCartItems.contains(it.product.id) }
+                        selectedItems.forEach { cartItem ->
+                             CheckoutItemCard(
+                                cartItem = cartItem,
+                                modifier = Modifier.padding(vertical = 4.dp)
+                            )
+                        }
+
+                        Spacer(Modifier.height(12.dp))
+
+                        // Shipping Selection (Once for the whole order)
+                        if (uiState.selectedShipping != null) {
+                            Card(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clickable { showShippingModal = true },
+                                colors = CardDefaults.cardColors(containerColor = Color(0xFFF3F4F6)),
+                                elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+                                shape = RoundedCornerShape(8.dp)
+                            ) {
+                                Column(modifier = Modifier.padding(12.dp)) {
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Text(
+                                            text = "Bebas Ongkir ",
+                                            fontSize = 13.sp,
+                                            fontWeight = FontWeight.Bold,
+                                            color = Color(0xFF111827)
+                                        )
+                                        Text(
+                                            text = "(Rp ${uiState.selectedShipping!!.price})",
+                                            fontSize = 13.sp,
+                                            fontWeight = FontWeight.Bold,
+                                            color = Color(0xFF6B7280),
+                                            textDecoration = TextDecoration.LineThrough
+                                        )
+                                    }
+                                    Text(
+                                        text = "Estimasi tiba ${uiState.selectedShipping!!.estimatedDays}",
+                                        fontSize = 11.sp,
+                                        color = Color(0xFF6B7280)
+                                    )
+                                    Spacer(Modifier.height(6.dp))
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Icon(
+                                            painter = painterResource(id = R.drawable.mart_ic_cat_daging),
+                                            contentDescription = null,
+                                            modifier = Modifier.size(14.dp),
+                                            tint = Color(0xFFD32F2F)
+                                        )
+                                        Spacer(Modifier.width(4.dp))
+                                        Text(
+                                            text = "Dapatkan asuransi pengiriman Rp 5.000",
+                                            fontSize = 11.sp,
+                                            color = Color(0xFF6B7280)
+                                        )
+                                    }
+                                }
+                            }
+                        } else {
+                            OutlinedButton(
+                                onClick = { showShippingModal = true },
+                                modifier = Modifier.fillMaxWidth(),
+                                shape = RoundedCornerShape(8.dp),
+                                colors = ButtonDefaults.outlinedButtonColors(
+                                    contentColor = Color(0xFFD32F2F)
+                                ),
+                                border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFD32F2F))
+                            ) {
+                                Text(
+                                    text = "Pilih Pengiriman",
+                                    fontSize = 14.sp,
+                                    fontWeight = FontWeight.Medium
+                                )
+                                Spacer(Modifier.weight(1f))
+                                Text(
+                                    text = "›",
+                                    fontSize = 18.sp,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+                        }
+                    }
+                }
+                Spacer(Modifier.height(16.dp))
             }
 
             // Voucher section
@@ -217,50 +321,40 @@ fun CheckoutScreen(
                 )
                 Spacer(Modifier.height(12.dp))
 
+                val itemCount = uiState.cartItems.filter { uiState.selectedCartItems.contains(it.product.id) }.size
                 CheckoutSummaryRow(
-                    label = "Total Harga (${uiState.cartItems.filter { uiState.selectedCartItems.contains(it.product.id) }.size} Barang)",
-                    value = CurrencyFormatter.formatRupiah(selectedTotal)
+                    label = "Total Harga ($itemCount Barang)",
+                    value = CurrencyFormatter.formatRupiah(subtotal)
                 )
                 Spacer(Modifier.height(8.dp))
 
                 CheckoutSummaryRow(
-                    label = "Total Biaya proteksi",
+                    label = "Total Ongkos Kirim",
+                    value = if (shippingCost == 0) "Rp 0" else CurrencyFormatter.formatRupiah(shippingCost),
+                    highlight = shippingCost == 0
+                )
+                Spacer(Modifier.height(8.dp))
+
+                CheckoutSummaryRow(
+                    label = "Total Asuransi Pengiriman",
+                    value = CurrencyFormatter.formatRupiah(insuranceCost)
+                )
+                Spacer(Modifier.height(8.dp))
+
+                CheckoutSummaryRow(
+                    label = "Total Biaya Proteksi",
                     value = CurrencyFormatter.formatRupiah(protectionCost)
                 )
-                Spacer(Modifier.height(8.dp))
 
+                Spacer(Modifier.height(12.dp))
+                HorizontalDivider(color = Color(0xFFE5E7EB))
+                Spacer(Modifier.height(12.dp))
+                
                 CheckoutSummaryRow(
                     label = "Total Belanja",
-                    value = "",
+                    value = CurrencyFormatter.formatRupiah(totalCost),
                     isTotal = true
                 )
-
-                if (uiState.selectedShipping != null) {
-                    Spacer(Modifier.height(8.dp))
-                    CheckoutSummaryRow(
-                        label = "Total Ongkos Kirim",
-                        value = "Rp ${shippingCost}",
-                        highlight = true
-                    )
-                    Spacer(Modifier.height(8.dp))
-                    CheckoutSummaryRow(
-                        label = "Total Asuransi Pengiriman",
-                        value = CurrencyFormatter.formatRupiah(protectionCost)
-                    )
-                    Spacer(Modifier.height(8.dp))
-                    CheckoutSummaryRow(
-                        label = "Total Biaya Proteksi",
-                        value = CurrencyFormatter.formatRupiah(protectionCost)
-                    )
-                    Spacer(Modifier.height(12.dp))
-                    HorizontalDivider(color = Color(0xFFE5E7EB))
-                    Spacer(Modifier.height(12.dp))
-                    CheckoutSummaryRow(
-                        label = "Total Belanja",
-                        value = CurrencyFormatter.formatRupiah(totalCost),
-                        isTotal = true
-                    )
-                }
 
                 Spacer(Modifier.height(24.dp))
             }

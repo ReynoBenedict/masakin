@@ -35,7 +35,10 @@ fun CartScreen(
     viewModel: MartViewModel = viewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    val selectedCartTotal = viewModel.getSelectedCartTotal()
+    // Calculate total reactively based on uiState
+    val selectedCartTotal = uiState.cartItems
+        .filter { uiState.selectedCartItems.contains(it.product.id) }
+        .sumOf { it.product.price * it.quantity }
 
     Scaffold(
         topBar = {
@@ -56,41 +59,49 @@ fun CartScreen(
             )
         },
         bottomBar = {
-            Surface(
-                shadowElevation = 8.dp,
-                color =Color.White
-            ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
+            if (uiState.cartItems.isNotEmpty()) {
+                Surface(
+                    shadowElevation = 16.dp,
+                    color = Color.White,
+                    shape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp)
                 ) {
-                    Column {
-                        Text(
-                            text = CurrencyFormatter.formatRupiah(selectedCartTotal),
-                            fontSize = 18.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = Color(0xFF111827)
-                        )
-                    }
-
-                    Button(
-                        onClick = onCheckout,
+                    Row(
                         modifier = Modifier
-                            .height(48.dp)
-                            .widthIn(min = 120.dp),
-                        shape = RoundedCornerShape(8.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFD32F2F)),
-                        enabled = uiState.selectedCartItems.isNotEmpty()
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp, vertical = 12.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text(
-                            text = "Check Out",
-                            color = Color.White,
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 14.sp
-                        )
+                        Column {
+                            Text(
+                                text = "Total Harga",
+                                fontSize = 12.sp,
+                                color = Color(0xFF6B7280)
+                            )
+                            Text(
+                                text = CurrencyFormatter.formatRupiah(selectedCartTotal),
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color(0xFF111827)
+                            )
+                        }
+
+                        Button(
+                            onClick = onCheckout,
+                            modifier = Modifier
+                                .height(40.dp)
+                                .widthIn(min = 120.dp),
+                            shape = RoundedCornerShape(8.dp),
+                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFD32F2F)),
+                            enabled = uiState.selectedCartItems.isNotEmpty()
+                        ) {
+                            Text(
+                                text = "Check Out (${uiState.selectedCartItems.size})",
+                                color = Color.White,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 14.sp
+                            )
+                        }
                     }
                 }
             }

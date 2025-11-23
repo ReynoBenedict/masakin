@@ -8,11 +8,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.masakin.R
 import com.example.masakin.ui.mart.viewmodel.ShippingMethod
 
 @Composable
@@ -30,19 +28,20 @@ fun ShippingBottomSheet(
         Card(
             modifier = Modifier.fillMaxWidth(),
             colors = CardDefaults.cardColors(containerColor = Color(0xFFFEE2E2)),
-            elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+            elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+            shape = RoundedCornerShape(8.dp)
         ) {
             Row(
                 modifier = Modifier.padding(12.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Icon(
-                    painter = painterResource(id = R.drawable.mart_ic_cat_daging),
-                    contentDescription = null,
-                    modifier = Modifier.size(20.dp),
-                    tint = Color(0xFFD32F2F)
+                Text(
+                    text = "ⓘ",
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color(0xFFD32F2F),
+                    modifier = Modifier.padding(end = 8.dp)
                 )
-                Spacer(Modifier.width(8.dp))
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
                         text = "Tersedia bebas ongkir",
@@ -53,11 +52,16 @@ fun ShippingBottomSheet(
                     Text(
                         text = "Estimasi tiba 10 - 13 Agustus",
                         fontSize = 11.sp,
-                        color = Color.Gray
+                        color = Color(0xFF6B7280)
                     )
                 }
                 TextButton(onClick = onDismiss) {
-                    Text("Pilih", color = Color(0xFFD32F2F), fontSize = 12.sp)
+                    Text(
+                        "Pilih",
+                        color = Color(0xFFD32F2F),
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.Bold
+                    )
                 }
             }
         }
@@ -89,7 +93,8 @@ private fun ShippingMethodOption(
         colors = CardDefaults.cardColors(
             containerColor = if (isSelected) Color(0xFFFEE2E2) else Color.White
         ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+        shape = RoundedCornerShape(8.dp)
     ) {
         Row(
             modifier = Modifier
@@ -100,31 +105,34 @@ private fun ShippingMethodOption(
             RadioButton(
                 selected = isSelected,
                 onClick = onClick,
-                colors = RadioButtonDefaults.colors(selectedColor = Color(0xFFD32F2F))
+                colors = RadioButtonDefaults.colors(
+                    selectedColor = Color(0xFFD32F2F),
+                    unselectedColor = Color(0xFF6B7280)
+                )
             )
             Spacer(Modifier.width(8.dp))
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = method.displayName,
                     fontSize = 14.sp,
-                    fontWeight = FontWeight.Bold
+                    fontWeight = FontWeight.Bold,
+                    color = Color(0xFF111827)
                 )
                 Text(
-                    text = "${method.displayName.split(" ")[0]} (Rp ${method.price})",
+                    text = "${method.displayName.split(" ")[0]} (Rp${method.price})",
                     fontSize = 12.sp,
-                    color = Color.Gray
+                    color = Color(0xFF6B7280)
                 )
                 Text(
                     text = "Estimasi tiba ${method.estimatedDays}",
                     fontSize = 11.sp,
-                    color = Color.Gray
+                    color = Color(0xFF6B7280)
                 )
             }
-            Icon(
-                painter = painterResource(id = R.drawable.mart_ic_cat_daging),
-                contentDescription = null,
-                modifier = Modifier.size(16.dp),
-                tint = Color.Gray
+            Text(
+                text = "ⓘ",
+                fontSize = 16.sp,
+                color = Color(0xFF6B7280)
             )
         }
     }

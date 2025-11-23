@@ -11,11 +11,10 @@ import androidx.navigation.navArgument
 import com.example.masakin.ui.mart.data.ProductCategory
 import com.example.masakin.ui.mart.screens.cart.CartScreen
 import com.example.masakin.ui.mart.screens.checkout.CheckoutScreen
-import com.example.masakin.ui.mart.screens.category.MartCategoryScreen
-import com.example.masakin.ui.mart.screens.category.MartDagingScreen
 import com.example.masakin.ui.mart.screens.home.MartHomeScreen
 import com.example.masakin.ui.mart.screens.order.OrderScreen
 import com.example.masakin.ui.mart.screens.detail.ProductDetailScreen
+import com.example.masakin.ui.mart.screens.order.PaymentSuccessScreen
 import com.example.masakin.ui.mart.viewmodel.MartViewModel
 
 @Composable
@@ -33,12 +32,7 @@ fun MartNavGraph(
                     navController.navigate(MartRoute.Detail.createRoute(productId))
                 },
                 onCategoryClick = { category ->
-                    if (category == ProductCategory.DAGING) {
-                         // Example specific screen if needed, or just generic category
-                         navController.navigate(MartRoute.Category.createRoute(category))
-                    } else {
-                         navController.navigate(MartRoute.Category.createRoute(category))
-                    }
+                    // Categories scroll on home screen, handled internally
                 },
                 onCartClick = {
                     navController.navigate(MartRoute.Cart.route)
@@ -52,34 +46,6 @@ fun MartNavGraph(
         }
 
         composable(
-            route = MartRoute.Category.route,
-            arguments = listOf(navArgument("categoryName") { type = NavType.StringType })
-        ) { backStackEntry ->
-            val categoryName = backStackEntry.arguments?.getString("categoryName")
-            val category = ProductCategory.valueOf(categoryName ?: ProductCategory.DAGING.name)
-            
-            // If we want to use MartDagingScreen for DAGING specifically
-            if (category == ProductCategory.DAGING) {
-                 MartDagingScreen(
-                    onBack = { navController.popBackStack() },
-                    onProductClick = { productId ->
-                        navController.navigate(MartRoute.Detail.createRoute(productId))
-                    },
-                    viewModel = viewModel
-                )
-            } else {
-                MartCategoryScreen(
-                    category = category,
-                    onBack = { navController.popBackStack() },
-                    onProductClick = { productId ->
-                        navController.navigate(MartRoute.Detail.createRoute(productId))
-                    },
-                    viewModel = viewModel
-                )
-            }
-        }
-
-        composable(
             route = MartRoute.Detail.route,
             arguments = listOf(navArgument("productId") { type = NavType.IntType })
         ) { backStackEntry ->
@@ -87,7 +53,12 @@ fun MartNavGraph(
             
             ProductDetailScreen(
                 productId = productId,
-                onBack = { navController.popBackStack() },
+                onBack = { 
+                    navController.navigate(MartRoute.Home.route) {
+                        popUpTo(MartRoute.Home.route) { inclusive = true }
+                        launchSingleTop = true
+                    }
+                },
                 onCartClick = { navController.navigate(MartRoute.Cart.route) },
                 viewModel = viewModel
             )
@@ -95,7 +66,12 @@ fun MartNavGraph(
 
         composable(MartRoute.Cart.route) {
             CartScreen(
-                onBack = { navController.popBackStack() },
+                onBack = { 
+                    navController.navigate(MartRoute.Home.route) {
+                        popUpTo(MartRoute.Home.route) { inclusive = true }
+                        launchSingleTop = true
+                    }
+                },
                 onCheckout = { navController.navigate(MartRoute.Checkout.route) },
                 viewModel = viewModel
             )
@@ -103,14 +79,43 @@ fun MartNavGraph(
 
         composable(MartRoute.Checkout.route) {
             CheckoutScreen(
-                onBack = { navController.popBackStack() },
+                onBack = { 
+                    navController.navigate(MartRoute.Home.route) {
+                        popUpTo(MartRoute.Home.route) { inclusive = true }
+                        launchSingleTop = true
+                    }
+                },
+                onPaymentSuccess = {
+                    navController.navigate(MartRoute.PaymentSuccess.route) {
+                        popUpTo(MartRoute.Home.route) { inclusive = false }
+                    }
+                },
                 viewModel = viewModel
             )
         }
 
         composable(MartRoute.Order.route) {
             OrderScreen(
-                onBack = { navController.popBackStack() }
+                onBack = { navController.popBackStack() },
+                viewModel = viewModel
+            )
+        }
+
+        composable(MartRoute.PaymentSuccess.route) {
+            val orderId = viewModel.uiState.value.lastCreatedOrderId ?: "ORD-000000"
+            val totalPaid = viewModel.uiState.value.orders.lastOrNull()?.total ?: 0
+            
+            PaymentSuccessScreen(
+                orderId = orderId,
+                totalPaid = totalPaid,
+                onViewOrder = {
+                    navController.navigate(MartRoute.Order.route) {
+                        popUpTo(MartRoute.Home.route) { inclusive = false }
+                    }
+                },
+                onBackToHome = {
+                    navController.popBackStack(MartRoute.Home.route, inclusive = false)
+                }
             )
         }
     }

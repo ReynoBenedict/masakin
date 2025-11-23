@@ -19,7 +19,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.masakin.ui.mart.data.CartItem
@@ -37,49 +36,52 @@ fun CartItemCard(
     Card(
         modifier = modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(containerColor = Color.White),
-        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
+        shape = RoundedCornerShape(12.dp)
     ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(12.dp),
-            verticalAlignment = Alignment.Top
-        ) {
-            // Checkbox
-            Checkbox(
-                checked = isSelected,
-                onCheckedChange = onSelectionChange,
-                colors = CheckboxDefaults.colors(
-                    checkedColor = Color(0xFFD32F2F),
-                    uncheckedColor = Color.Gray
-                ),
-                modifier = Modifier.padding(top = 8.dp)
-            )
+        Column(modifier = Modifier.fillMaxWidth()) {
+            // Store header with checkbox
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 8.dp, top = 8.dp, end = 12.dp, bottom = 0.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                // Checkbox
+                Checkbox(
+                    checked = isSelected,
+                    onCheckedChange = onSelectionChange,
+                    colors = CheckboxDefaults.colors(
+                        checkedColor = Color(0xFFD32F2F),
+                        uncheckedColor = Color.Gray
+                    ),
+                    modifier = Modifier.size(24.dp)
+                )
 
-            Spacer(Modifier.width(8.dp))
+                Spacer(Modifier.width(4.dp))
 
-            // Store name header (top of card)
-            Column(modifier = Modifier.fillMaxWidth()) {
-                // Store name
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(
-                        painter = painterResource(id = com.example.masakin.R.drawable.mart_ic_cat_daging),
-                        contentDescription = null,
-                        modifier = Modifier.size(16.dp),
-                        tint = Color(0xFFD32F2F)
-                    )
-                    Spacer(Modifier.width(4.dp))
-                    Text(
-                        text = "Selvi's Mart",
-                        fontSize = 12.sp,
-                        color = Color(0xFF6B7280)
-                    )
-                }
+                // Store badge
+                Icon(
+                    painter = painterResource(id = com.example.masakin.R.drawable.mart_ic_cat_daging),
+                    contentDescription = null,
+                    modifier = Modifier.size(14.dp),
+                    tint = Color(0xFFD32F2F)
+                )
+                Spacer(Modifier.width(4.dp))
+                Text(
+                    text = "Selvi's Mart",
+                    fontSize = 11.sp,
+                    color = Color(0xFF6B7280)
+                )
+            }
 
-                Spacer(Modifier.height(8.dp))
-
-                // Product details row
-                Row(modifier = Modifier.fillMaxWidth()) {
+            // Product row with red corner
+            Box(modifier = Modifier.fillMaxWidth()) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(start = 48.dp, end = 12.dp, top = 4.dp, bottom = 12.dp)
+                ) {
                     // Product Image
                     Image(
                         painter = painterResource(id = cartItem.product.image),
@@ -94,122 +96,120 @@ fun CartItemCard(
 
                     // Product info column
                     Column(
-                        modifier = Modifier
-                            .weight(1f)
-                            .fillMaxHeight()
+                        modifier = Modifier.weight(1f)
                     ) {
                         Text(
                             text = cartItem.product.name,
                             fontSize = 14.sp,
                             fontWeight = FontWeight.Bold,
-                            maxLines = 2
+                            maxLines = 2,
+                            lineHeight = 18.sp
                         )
 
-                        Spacer(Modifier.height(8.dp))
+                        Spacer(Modifier.height(4.dp))
 
+                        // Unit/price
+                        Text(
+                            text = "${cartItem.quantity}x ${CurrencyFormatter.formatRupiah(cartItem.product.price)}",
+                            fontSize = 12.sp,
+                            color = Color(0xFF6B7280)
+                        )
+
+                        Spacer(Modifier.weight(1f))
+
+                        // Price and quantity controls row
                         Row(
+                            modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            // Edit and favorite icons
-                            Icon(
-                                painter = painterResource(id = com.example.masakin.R.drawable.ic_launcher_foreground),
-                                contentDescription = "Edit",
-                                modifier = Modifier.size(20.dp),
-                                tint = Color.Gray
+                            Text(
+                                text = CurrencyFormatter.formatRupiah(cartItem.product.price * cartItem.quantity),
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color(0xFF111827)
                             )
-                            Spacer(Modifier.width(8.dp))
-                            Icon(
-                                imageVector = Icons.Outlined.FavoriteBorder,
-                                contentDescription = "Favorite",
-                                modifier = Modifier.size(20.dp),
-                                tint = Color.Gray
-                            )
-                        }
-                    }
 
-                    // Red corner accent
-                    Box(
-                        modifier = Modifier
-                            .width(40.dp)
-                            .height(40.dp)
-                            .offset(x = 12.dp, y = (-12).dp)
-                    ) {
-                        androidx.compose.foundation.Canvas(modifier = Modifier.fillMaxSize()) {
-                            val path = androidx.compose.ui.graphics.Path().apply {
-                                moveTo(size.width, 0f)
-                                lineTo(size.width, size.height)
-                                lineTo(0f, 0f)
-                                close()
+                            // Quantity controls
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                // Decrease button
+                                Box(
+                                    modifier = Modifier
+                                        .size(24.dp)
+                                        .border(1.dp, Color(0xFFD32F2F), RoundedCornerShape(4.dp))
+                                        .clickable {
+                                            if (cartItem.quantity > 1) {
+                                                onQuantityChange(cartItem.quantity - 1)
+                                            }
+                                        },
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text(
+                                        text = "−",
+                                        color = Color(0xFFD32F2F),
+                                        fontSize = 14.sp,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                }
+
+                                // Quantity display
+                                Text(
+                                    text = cartItem.quantity.toString(),
+                                    fontSize = 13.sp,
+                                    fontWeight = FontWeight.Medium,
+                                    modifier = Modifier.widthIn(min = 16.dp)
+                                )
+
+                                // Increase button
+                                Box(
+                                    modifier = Modifier
+                                        .size(24.dp)
+                                        .background(Color(0xFFD32F2F), RoundedCornerShape(4.dp))
+                                        .clickable { onQuantityChange(cartItem.quantity + 1) },
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Add,
+                                        contentDescription = "Increase",
+                                        tint = Color.White,
+                                        modifier = Modifier.size(14.dp)
+                                    )
+                                }
+
+                                // Delete button
+                                IconButton(
+                                    onClick = onDelete,
+                                    modifier = Modifier.size(24.dp)
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Outlined.Delete,
+                                        contentDescription = "Delete",
+                                        tint = Color(0xFF6B7280),
+                                        modifier = Modifier.size(18.dp)
+                                    )
+                                }
                             }
-                            drawPath(path, Color(0xFFD32F2F))
                         }
                     }
                 }
 
-                Spacer(Modifier.height(8.dp))
-
-                // Price and quantity controls
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
+                // Red corner triangle
+                Box(
+                    modifier = Modifier
+                        .size(32.dp)
+                        .align(Alignment.TopEnd)
                 ) {
-                    Text(
-                        text = CurrencyFormatter.formatRupiah(cartItem.product.price),
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color(0xFF111827)
-                    )
-
-                    // Quantity controls
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        // Decrease button
-                        Box(
-                            modifier = Modifier
-                                .size(28.dp)
-                                .border(1.dp, Color(0xFFD32F2F), RoundedCornerShape(6.dp))
-                                .clickable { 
-                                    if (cartItem.quantity > 1) {
-                                        onQuantityChange(cartItem.quantity - 1)
-                                    }
-                                },
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(
-                                text = "−",
-                                color = Color(0xFFD32F2F),
-                                fontSize = 16.sp,
-                                fontWeight = FontWeight.Bold
-                            )
+                    androidx.compose.foundation.Canvas(modifier = Modifier.fillMaxSize()) {
+                        val path = androidx.compose.ui.graphics.Path().apply {
+                            moveTo(size.width, 0f)
+                            lineTo(size.width, size.height)
+                            lineTo(0f, 0f)
+                            close()
                         }
-
-                        // Quantity display
-                        Text(
-                            text = cartItem.quantity.toString(),
-                            fontSize = 14.sp,
-                            fontWeight = FontWeight.Medium,
-                            modifier = Modifier.widthIn(min = 20.dp)
-                        )
-
-                        // Increase button
-                        Box(
-                            modifier = Modifier
-                                .size(28.dp)
-                                .background(Color(0xFFD32F2F), RoundedCornerShape(6.dp))
-                                .clickable { onQuantityChange(cartItem.quantity + 1) },
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Add,
-                                contentDescription = "Increase",
-                                tint = Color.White,
-                                modifier = Modifier.size(16.dp)
-                            )
-                        }
+                        drawPath(path, Color(0xFFD32F2F))
                     }
                 }
             }

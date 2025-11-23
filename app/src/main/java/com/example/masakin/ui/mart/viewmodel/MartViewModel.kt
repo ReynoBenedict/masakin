@@ -19,6 +19,16 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
+
+data class Order(
+    val id: String,
+    val date: String,
+    val status: String,
+    val total: Int,
+    val items: List<CartItem>,
+    val paymentMethod: PaymentMethod?,
+    val shippingMethod: ShippingMethod?
+)
 data class MartUiState(
     val selectedCategory: ProductCategory = ProductCategory.DAGING,
     val products: List<Product> = emptyList(),
@@ -32,7 +42,9 @@ data class MartUiState(
     val cartItems: List<CartItem> = emptyList(),
     val selectedCartItems: Set<Int> = emptySet(),
     val selectedShipping: ShippingMethod? = null,
-    val selectedPayment: PaymentMethod? = null
+    val selectedPayment: PaymentMethod? = null,
+    val orders: List<Order> = emptyList(),
+    val lastCreatedOrderId: String? = null
 )
 
 enum class ShippingMethod(val displayName: String, val price: Int, val estimatedDays: String) {
@@ -169,12 +181,52 @@ class MartViewModel : ViewModel() {
         return _uiState.value.selectedShipping?.price ?: 0
     }
 
+    fun getInsuranceCost(): Int {
+        return if ((_uiState.value.selectedShipping?.price ?: 0) > 0) 5000 else 0
+    }
     fun getProtectionCost(): Int {
-        return 5000
+        return 3000  // CHANGE FROM 5000
+    }
+    fun getSubtotal(): Int {
+        return getSelectedCartTotal()
+    }
+    fun getCheckoutTotal(): Int {
+        return getSubtotal() + getShippingCost() + getInsuranceCost() + getProtectionCost()
     }
 
-    fun getCheckoutTotal(): Int {
-        return getSelectedCartTotal() + getShippingCost() + getProtectionCost()
+    fun createOrder() {
+        val orderId = "ORD-${System.currentTimeMillis().toString().takeLast(6)}"
+        val selectedItems = _uiState.value.cartItems
+            .filter { _uiState.value.selectedCartItems.contains(it.product.id) }
+
+        if (selectedItems.isEmpty()) return
+
+        val newOrder = Order(
+            id = orderId,
+            date = getCurrentDate(),
+            status = "Selesai",
+            total = getCheckoutTotal(),
+            items = selectedItems,
+            paymentMethod = _uiState.value.selectedPayment,
+            shippingMethod = _uiState.value.selectedShipping
+        )
+
+        _uiState.update {
+            it.copy(
+                orders = it.orders + newOrder,
+                lastCreatedOrderId = orderId,
+                cartItems = it.cartItems.filterNot { item ->
+                    it.selectedCartItems.contains(item.product.id)
+                },
+                selectedCartItems = emptySet(),
+                selectedShipping = null,
+                selectedPayment = null
+            )
+        }
+    }
+    private fun getCurrentDate(): String {
+        val formatter = java.text.SimpleDateFormat("dd MMM yyyy", java.util.Locale("id", "ID"))
+        return formatter.format(java.util.Date())
     }
 
     fun requestLocationUpdate(

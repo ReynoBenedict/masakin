@@ -9,6 +9,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -16,28 +18,19 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import java.text.NumberFormat
-import java.util.Locale
-
-data class DummyOrder(
-    val id: String,
-    val date: String,
-    val status: String,
-    val total: Int,
-    val items: String
-)
-
-val dummyOrders = listOf(
-    DummyOrder("ORD-001", "20 Nov 2023", "Selesai", 150000, "Daging Sapi (1kg), Bawang Merah (500g)"),
-    DummyOrder("ORD-002", "18 Nov 2023", "Selesai", 45000, "Telur Ayam (1kg)"),
-    DummyOrder("ORD-003", "15 Nov 2023", "Dibatalkan", 75000, "Minyak Goreng (2L)")
-)
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.masakin.ui.mart.utils.CurrencyFormatter
+import com.example.masakin.ui.mart.viewmodel.MartViewModel
+import com.example.masakin.ui.mart.viewmodel.Order
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun OrderScreen(
-    onBack: () -> Unit
+    onBack: () -> Unit,
+    viewModel: MartViewModel = viewModel()
 ) {
+    val uiState by viewModel.uiState.collectAsState()
+    
     Scaffold(
         topBar = {
             TopAppBar(
@@ -52,22 +45,52 @@ fun OrderScreen(
         },
         containerColor = Color(0xFFFAFAFA)
     ) { padding ->
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding)
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            items(dummyOrders) { order ->
-                OrderCard(order)
+        if (uiState.orders.isEmpty()) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(padding),
+                contentAlignment = Alignment.Center
+            ) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Text(
+                        text = "📦",
+                        fontSize = 48.sp
+                    )
+                    Text(
+                        text = "Belum ada pesanan",
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Medium,
+                        color = Color(0xFF6B7280)
+                    )
+                    Text(
+                        text = "Yuk, mulai belanja!",
+                        fontSize = 14.sp,
+                        color = Color(0xFF9CA3AF)
+                    )
+                }
+            }
+        } else {
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(padding)
+                    .padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                items(uiState.orders.reversed()) { order ->
+                    OrderCard(order)
+                }
             }
         }
     }
 }
 
 @Composable
-fun OrderCard(order: DummyOrder) {
+fun OrderCard(order: Order) {
     Card(
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White),
@@ -86,24 +109,25 @@ fun OrderCard(order: DummyOrder) {
                 Text(
                     text = order.id,
                     fontWeight = FontWeight.Bold,
-                    fontSize = 14.sp
+                    fontSize = 14.sp,
+                    color = Color(0xFF111827)
                 )
                 
-                val statusColor = when(order.status) {
-                    "Selesai" -> Color(0xFF10B981) // Green
-                    "Dibatalkan" -> Color(0xFFEF4444) // Red
-                    else -> Color(0xFFF59E0B) // Orange
+                val (statusBg, statusText) = when(order.status) {
+                    "Selesai" -> Pair(Color(0xFFD1FAE5), Color(0xFF065F46))
+                    "Dibatalkan" -> Pair(Color(0xFFFEE2E2), Color(0xFFB91C1C))
+                    else -> Pair(Color(0xFFFEF3C7), Color(0xFFB45309))
                 }
                 
                 Box(
                     modifier = Modifier
-                        .clip(RoundedCornerShape(4.dp))
-                        .background(statusColor.copy(alpha = 0.1f))
+                        .clip(RoundedCornerShape(16.dp))
+                        .background(statusBg)
                         .padding(horizontal = 8.dp, vertical = 4.dp)
                 ) {
                     Text(
                         text = order.status,
-                        color = statusColor,
+                        color = statusText,
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Medium
                     )
@@ -112,10 +136,15 @@ fun OrderCard(order: DummyOrder) {
             
             Spacer(modifier = Modifier.height(8.dp))
             
+            val itemsSummary = order.items
+                .take(2)
+                .joinToString(", ") { "${it.product.name} (${it.quantity}x)" }
+            val moreItems = if (order.items.size > 2) " +${order.items.size - 2} lainnya" else ""
+            
             Text(
-                text = order.items,
+                text = itemsSummary + moreItems,
                 fontSize = 14.sp,
-                color = Color.Gray,
+                color = Color(0xFF6B7280),
                 maxLines = 2
             )
             
@@ -129,11 +158,11 @@ fun OrderCard(order: DummyOrder) {
                 Text(
                     text = order.date,
                     fontSize = 12.sp,
-                    color = Color.Gray
+                    color = Color(0xFF9CA3AF)
                 )
                 
                 Text(
-                    text = formatRupiah(order.total),
+                    text = CurrencyFormatter.formatRupiah(order.total),
                     fontWeight = FontWeight.Bold,
                     fontSize = 14.sp,
                     color = Color(0xFF111827)
@@ -141,11 +170,4 @@ fun OrderCard(order: DummyOrder) {
             }
         }
     }
-}
-
-private fun formatRupiah(amount: Int): String {
-    val localeID = Locale("id", "ID")
-    val numberFormat = NumberFormat.getCurrencyInstance(localeID)
-    numberFormat.maximumFractionDigits = 0
-    return numberFormat.format(amount).replace("Rp", "Rp ")
 }
