@@ -29,6 +29,12 @@ class RecipeViewModel : ViewModel() {
         _ui.value = _ui.value.copy(query = q)
     }
 
+    // TAMBAHKAN FUNCTION UNTUK GET RECIPE BY ID
+    fun getRecipeById(id: String): Recipe? {
+        val allRecipes = dummyRecipes()
+        return allRecipes.find { it.id == id }
+    }
+
     // ----- Dummy data -----
     private fun dummyRecipes(): List<Recipe> = listOf(
         // ===== Mie (4) =====
