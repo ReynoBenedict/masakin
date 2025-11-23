@@ -383,7 +383,7 @@ fun RecipeDetailScreen(
                 .padding(16.dp)
         ) {
             Button(
-                onClick = { /* aksi selesai */ },
+                onClick = onBack,
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(50.dp),
