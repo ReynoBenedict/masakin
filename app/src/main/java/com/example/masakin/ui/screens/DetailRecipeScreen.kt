@@ -2,8 +2,10 @@
 
 package com.example.masakin.ui.screens.recipe
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
@@ -13,22 +15,25 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import coil.compose.AsyncImage
 import com.example.masakin.ui.recipe.Recipe
-
+import com.example.masakin.R
 data class StepItemModel(val number: Int, val text: String)
 
 private val defaultSteps = listOf(
@@ -42,11 +47,11 @@ private val defaultSteps = listOf(
 )
 
 private val defaultIngredients = listOf(
-    IngredientData("Daging Ayam", "165 cal", "Rp25.000"),
-    IngredientData("Mie", "100 cal", "Rp5.000"),
-    IngredientData("Selada", "100 cal", "Rp8.000"),
-    IngredientData("Bawang Putih", "50 cal", "Rp10.000"),
-    IngredientData("Kecap Manis", "20 cal", "Rp15.000")
+    IngredientData("Daging Ayam", "165 cal", "Rp25.000", R.drawable.daging_ayam),
+    IngredientData("Mie", "100 cal", "Rp5.000", R.drawable.mie_mentah),
+    IngredientData("Selada", "100 cal", "Rp8.000", R.drawable.selada),
+    IngredientData("Bawang Putih", "50 cal", "Rp10.000", R.drawable.bawang_putih),
+    IngredientData("Kecap Manis", "20 cal", "Rp15.000", R.drawable.kecap_manis)
 )
 
 private val defaultAlat = listOf(
@@ -59,7 +64,7 @@ private val defaultAlat = listOf(
     "Mangkok saji"
 )
 
-data class IngredientData(val name: String, val cal: String, val price: String = "")
+data class IngredientData(val name: String, val cal: String, val price: String = "", val imageRes: Int = 0)
 
 @Composable
 fun RecipeDetailScreen(
@@ -74,6 +79,9 @@ fun RecipeDetailScreen(
     val GrayText = Color(0xFF757575)
     val GreenRating = Color(0xFF4CAF50)
 
+    // State untuk menyimpan status setiap langkah (checked atau tidak)
+    val checkedSteps = remember { mutableStateOf(List(steps.size) { false }) }
+
     Box(modifier = Modifier.fillMaxSize()) {
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
@@ -86,9 +94,9 @@ fun RecipeDetailScreen(
                         .fillMaxWidth()
                         .height(280.dp)
                 ) {
-                    AsyncImage(
-                        model = recipe.imageUrl,
-                        contentDescription = recipe.title,
+                    Image(
+                        painter = painterResource(id = recipe.imageRes),
+                        contentDescription = recipe.name,
                         contentScale = ContentScale.Crop,
                         modifier = Modifier.fillMaxSize()
                     )
@@ -146,22 +154,24 @@ fun RecipeDetailScreen(
 
             // Title + Rating Badge
             item {
-                Column(modifier = Modifier
-                    .fillMaxWidth()
-                    .offset(y = (-30).dp)
-                    .background(
-                        Color.White,
-                        RoundedCornerShape(topStart = 30.dp, topEnd = 30.dp)
-                    )
-                    .padding(horizontal = 16.dp)
-                    .padding(top = 20.dp)) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .offset(y = (-30).dp)
+                        .background(
+                            Color.White,
+                            RoundedCornerShape(topStart = 30.dp, topEnd = 30.dp)
+                        )
+                        .padding(horizontal = 16.dp)
+                        .padding(top = 20.dp)
+                ) {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.Top
                     ) {
                         Text(
-                            text = recipe.title,
+                            text = recipe.name,
                             fontSize = 18.sp,
                             fontWeight = FontWeight.Bold,
                             modifier = Modifier.weight(1f),
@@ -185,7 +195,7 @@ fun RecipeDetailScreen(
                     }
                     Spacer(Modifier.height(4.dp))
                     Text(
-                        text = "${recipe.minutes} Menit",
+                        text = "${recipe.servings} Menit",
                         fontSize = 13.sp,
                         color = GrayText
                     )
@@ -201,12 +211,15 @@ fun RecipeDetailScreen(
                         .padding(top = 4.dp, bottom = 8.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    // Avatar chef (placeholder atau AsyncImage)
-                    Box(
+                    // Avatar chef
+                    Image(
+                        painter = painterResource(id = R.drawable.chef_juna),
+                        contentDescription = "Chef Avatar",
                         modifier = Modifier
                             .size(44.dp)
                             .clip(CircleShape)
-                            .background(Color.LightGray)
+                            .background(Color.LightGray),
+                        contentScale = ContentScale.Crop
                     )
                     Spacer(Modifier.width(4.dp))
                     Column {
@@ -238,6 +251,7 @@ fun RecipeDetailScreen(
                                     name = ingredient.name,
                                     cal = ingredient.cal,
                                     price = ingredient.price,
+                                    imageRes = ingredient.imageRes,
                                     redColor = RedPrimary
                                 )
                             }
@@ -277,31 +291,50 @@ fun RecipeDetailScreen(
                 )
             }
 
-            // Steps dengan timeline
+            // Steps dengan timeline dan checkbox
             itemsIndexed(steps) { index, step ->
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 16.dp)
                 ) {
-                    // Timeline column
+                    // Timeline column dengan checkbox
                     Column(
                         horizontalAlignment = Alignment.CenterHorizontally,
                         modifier = Modifier.width(40.dp)
                     ) {
-                        // Circle dengan nomor
+                        // Circle dengan nomor atau centang
                         Box(
                             modifier = Modifier
                                 .size(32.dp)
-                                .border(2.dp, RedPrimary, CircleShape),
+                                .border(2.dp, RedPrimary, CircleShape)
+                                .background(
+                                    if (checkedSteps.value[index]) RedPrimary else Color.Transparent,
+                                    CircleShape
+                                )
+                                .clickable {
+                                    // Toggle checked state
+                                    checkedSteps.value = checkedSteps.value.toMutableList().apply {
+                                        this[index] = !this[index]
+                                    }
+                                },
                             contentAlignment = Alignment.Center
                         ) {
-                            Text(
-                                text = "${step.number}",
-                                color = RedPrimary,
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 14.sp
-                            )
+                            if (checkedSteps.value[index]) {
+                                Icon(
+                                    imageVector = Icons.Default.Check,
+                                    contentDescription = "Checked",
+                                    tint = Color.White,
+                                    modifier = Modifier.size(20.dp)
+                                )
+                            } else {
+                                Text(
+                                    text = " ",
+                                    color = RedPrimary,
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 14.sp
+                                )
+                            }
                         }
                         // Line ke bawah (kecuali item terakhir)
                         if (index < steps.lastIndex) {
@@ -364,7 +397,7 @@ fun RecipeDetailScreen(
 }
 
 @Composable
-fun IngredientCard(name: String, cal: String, price: String, redColor: Color) {
+fun IngredientCard(name: String, cal: String, price: String, imageRes: Int, redColor: Color) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(12.dp),
@@ -377,14 +410,26 @@ fun IngredientCard(name: String, cal: String, price: String, redColor: Color) {
                 .padding(8.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // Placeholder gambar bahan
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(80.dp)
-                    .clip(RoundedCornerShape(8.dp))
-                    .background(Color(0xFFF5F5F5))
-            )
+            // Gambar bahan
+            if (imageRes != 0) {
+                Image(
+                    painter = painterResource(id = imageRes),
+                    contentDescription = name,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(80.dp)
+                        .clip(RoundedCornerShape(8.dp)),
+                    contentScale = ContentScale.Crop
+                )
+            } else {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(80.dp)
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(Color(0xFFF5F5F5))
+                )
+            }
             Spacer(Modifier.height(8.dp))
             Text(
                 text = name,

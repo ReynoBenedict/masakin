@@ -19,6 +19,8 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
+import androidx.compose.foundation.Image
 
 @Composable
 fun CategorySection(
@@ -62,9 +64,9 @@ fun CategorySection(
                     elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
                 ) {
                     Column(modifier = Modifier.fillMaxWidth()) {
-                        AsyncImage(
-                            model = recipe.imageUrl,
-                            contentDescription = recipe.title,
+                        Image(
+                            painter = painterResource(id = recipe.imageRes),
+                            contentDescription = recipe.name,
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .height(110.dp),
@@ -73,7 +75,7 @@ fun CategorySection(
                         Spacer(modifier = Modifier.height(8.dp))
                         Column(modifier = Modifier.padding(horizontal = 8.dp, vertical = 6.dp)) {
                             Text(
-                                text = recipe.title,
+                                text = recipe.name,
                                 maxLines = 2,
                                 overflow = TextOverflow.Ellipsis,
                                 fontWeight = FontWeight.SemiBold,
@@ -81,7 +83,7 @@ fun CategorySection(
                             )
                             Spacer(modifier = Modifier.height(4.dp))
                             Text(
-                                text = "${recipe.minutes} menit • ${String.format("%.1f", recipe.rating)}",
+                                text = "${recipe.servings} menit • ${String.format("%.1f", recipe.rating)}",
                                 fontSize = 12.sp,
                                 color = Color.Gray
                             )
