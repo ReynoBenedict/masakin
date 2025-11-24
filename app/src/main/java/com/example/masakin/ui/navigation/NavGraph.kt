@@ -9,6 +9,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import androidx.navigation.navOptions
 import com.example.masakin.ui.community.CommunityRoute
+import com.example.masakin.ui.community.CreatePostRoute
 import com.example.masakin.ui.mart.navigation.MartNavGraph
 import com.example.masakin.ui.recipe.RecipeViewModel
 import com.example.masakin.ui.screens.*
@@ -34,6 +35,7 @@ object Routes {
     const val CONSULTATION = "consultation"
     const val APPOINTMENT = "appointment/{consultantId}"
     const val CHAT_SCREEN_2 = "chat_screen_2/{consultantId}"
+    const val CREATE_POST = "create_post"
 
     const val RECIPE_DETAIL = "recipe_detail/{recipeId}"
 
@@ -235,7 +237,15 @@ fun MasakinNavGraph(
         composable(Routes.COMMUNITY) {
             CommunityRoute(
                 onBack = { navController.popBackStack() },
-                onCreatePost = {}
+                onCreatePost = {
+                    navController.navigate(Routes.CREATE_POST)
+                }
+            )
+        }
+
+        composable(Routes.CREATE_POST) {
+            CreatePostRoute(
+                onBack = { navController.popBackStack() }
             )
         }
 

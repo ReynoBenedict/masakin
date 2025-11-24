@@ -1,4 +1,5 @@
 package com.example.masakin.data.model
+
 data class Post(
     val id: String,
     val userName: String,
@@ -6,8 +7,8 @@ data class Post(
     val userAvatarUrl: String,
     val time: String,
     val content: String,
-    val imageUrl: String?,
-    val likes: Int,
-    val comments: Int,
-    val shares: Int
+    val imageUrl: String? = null,
+    val likes: Int = 0,
+    val comments: Int = 0,
+    val shares: Int = 0
 )
