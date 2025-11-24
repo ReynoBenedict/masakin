@@ -1,6 +1,5 @@
 package com.example.masakin.ui.mart.components
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -14,11 +13,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.compose.AsyncImage
+import coil.request.ImageRequest
 import com.example.masakin.ui.mart.data.Product
 import com.example.masakin.ui.mart.utils.CurrencyFormatter
 
@@ -39,9 +40,11 @@ fun ProductCard(
         Column(
             modifier = Modifier.padding(8.dp)
         ) {
-            // Image
-            Image(
-                painter = painterResource(id = product.image),
+            AsyncImage(
+                model = ImageRequest.Builder(LocalContext.current)
+                    .data(product.imageUrl)
+                    .crossfade(true)
+                    .build(),
                 contentDescription = product.name,
                 modifier = Modifier
                     .fillMaxWidth()
@@ -52,7 +55,6 @@ fun ProductCard(
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            // Name
             Text(
                 text = product.name,
                 fontSize = 14.sp,
@@ -64,7 +66,6 @@ fun ProductCard(
 
             Spacer(modifier = Modifier.height(4.dp))
 
-            // Unit
             Text(
                 text = product.unit,
                 fontSize = 12.sp,
@@ -73,7 +74,6 @@ fun ProductCard(
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            // Price & Add Button
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,

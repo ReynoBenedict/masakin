@@ -78,7 +78,6 @@ fun RelatedRecipeCard(
                         .clip(RoundedCornerShape(4.dp))
                         .background(Color.Gray)
                 ) {
-                    // If author has image, use it here
                 }
                 
                 Spacer(modifier = Modifier.width(4.dp))

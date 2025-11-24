@@ -1,6 +1,5 @@
 package com.example.masakin.ui.mart.components
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -9,7 +8,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.outlined.Delete
-import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -17,10 +15,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.compose.AsyncImage
+import coil.request.ImageRequest
 import com.example.masakin.ui.mart.data.CartItem
 import com.example.masakin.ui.mart.utils.CurrencyFormatter
 
@@ -40,14 +41,12 @@ fun CartItemCard(
         shape = RoundedCornerShape(12.dp)
     ) {
         Column(modifier = Modifier.fillMaxWidth()) {
-            // Store header with checkbox
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(start = 8.dp, top = 8.dp, end = 12.dp, bottom = 0.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // Checkbox
                 Checkbox(
                     checked = isSelected,
                     onCheckedChange = onSelectionChange,
@@ -60,7 +59,6 @@ fun CartItemCard(
 
                 Spacer(Modifier.width(4.dp))
 
-                // Store badge
                 Icon(
                     painter = painterResource(id = com.example.masakin.R.drawable.mart_ic_cat_daging),
                     contentDescription = null,
@@ -75,16 +73,17 @@ fun CartItemCard(
                 )
             }
 
-            // Product row with red corner
             Box(modifier = Modifier.fillMaxWidth()) {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(start = 48.dp, end = 12.dp, top = 4.dp, bottom = 12.dp)
                 ) {
-                    // Product Image
-                    Image(
-                        painter = painterResource(id = cartItem.product.image),
+                    AsyncImage(
+                        model = ImageRequest.Builder(LocalContext.current)
+                            .data(cartItem.product.imageUrl)
+                            .crossfade(true)
+                            .build(),
                         contentDescription = cartItem.product.name,
                         modifier = Modifier
                             .size(80.dp)
@@ -94,7 +93,6 @@ fun CartItemCard(
 
                     Spacer(Modifier.width(12.dp))
 
-                    // Product info column
                     Column(
                         modifier = Modifier.weight(1f)
                     ) {
@@ -108,7 +106,6 @@ fun CartItemCard(
 
                         Spacer(Modifier.height(4.dp))
 
-                        // Unit/price
                         Text(
                             text = "${cartItem.quantity}x ${CurrencyFormatter.formatRupiah(cartItem.product.price)}",
                             fontSize = 12.sp,
@@ -117,7 +114,6 @@ fun CartItemCard(
 
                         Spacer(Modifier.weight(1f))
 
-                        // Price and quantity controls row
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.SpaceBetween,
@@ -130,12 +126,10 @@ fun CartItemCard(
                                 color = Color(0xFF111827)
                             )
 
-                            // Quantity controls
                             Row(
                                 verticalAlignment = Alignment.CenterVertically,
                                 horizontalArrangement = Arrangement.spacedBy(8.dp)
                             ) {
-                                // Decrease button
                                 Box(
                                     modifier = Modifier
                                         .size(24.dp)
@@ -155,7 +149,6 @@ fun CartItemCard(
                                     )
                                 }
 
-                                // Quantity display
                                 Text(
                                     text = cartItem.quantity.toString(),
                                     fontSize = 13.sp,
@@ -163,7 +156,6 @@ fun CartItemCard(
                                     modifier = Modifier.widthIn(min = 16.dp)
                                 )
 
-                                // Increase button
                                 Box(
                                     modifier = Modifier
                                         .size(24.dp)
@@ -179,7 +171,6 @@ fun CartItemCard(
                                     )
                                 }
 
-                                // Delete button
                                 IconButton(
                                     onClick = onDelete,
                                     modifier = Modifier.size(24.dp)
@@ -196,7 +187,6 @@ fun CartItemCard(
                     }
                 }
 
-                // Red corner triangle
                 Box(
                     modifier = Modifier
                         .size(32.dp)

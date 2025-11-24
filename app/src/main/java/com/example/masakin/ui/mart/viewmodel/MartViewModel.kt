@@ -230,13 +230,21 @@ class MartViewModel : ViewModel() {
     ) {
         viewModelScope.launch {
             try {
-                if (ContextCompat.checkSelfPermission(
-                        context,
-                        Manifest.permission.ACCESS_FINE_LOCATION
-                    ) != PackageManager.PERMISSION_GRANTED
-                ) {
+                // Check if either FINE or COARSE location permission is granted
+                val hasFineLocation = ContextCompat.checkSelfPermission(
+                    context,
+                    Manifest.permission.ACCESS_FINE_LOCATION
+                ) == PackageManager.PERMISSION_GRANTED
+                
+                val hasCoarseLocation = ContextCompat.checkSelfPermission(
+                    context,
+                    Manifest.permission.ACCESS_COARSE_LOCATION
+                ) == PackageManager.PERMISSION_GRANTED
+                
+                if (!hasFineLocation && !hasCoarseLocation) {
                     _uiState.update {
                         it.copy(
+                            deliveryAddress = "Location permission required",
                             locationError = "Location permission required",
                             isLoadingLocation = false
                         )
@@ -267,6 +275,7 @@ class MartViewModel : ViewModel() {
                 } else {
                     _uiState.update {
                         it.copy(
+                            deliveryAddress = "Unable to get location",
                             locationError = "Unable to get location. Using default.",
                             isLoadingLocation = false
                         )
@@ -275,6 +284,7 @@ class MartViewModel : ViewModel() {
             } catch (e: Exception) {
                 _uiState.update {
                     it.copy(
+                        deliveryAddress = "Location error",
                         locationError = "Location error: ${e.message}",
                         isLoadingLocation = false
                     )

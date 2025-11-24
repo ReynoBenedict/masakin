@@ -19,15 +19,10 @@ object Routes {
     const val ONBOARDING = "onboarding"
     const val LOGIN = "login"
     const val REGISTER = "register"
-
     const val HOME = "home"
-
-    // bottom navbar
     const val CHAT = "chat"
     const val MYFOOD = "myfood"
     const val PROFILE = "profile"
-
-    // fitur lain
     const val CHATBOT = "chatbot"
     const val RECIPE = "recipe"
     const val COMMUNITY = "community"
@@ -40,10 +35,8 @@ object Routes {
     const val RECIPE_DETAIL = "recipe_detail/{recipeId}"
 
     fun recipeDetailRoute(id: String) = "recipe_detail/$id"
-
     fun appointmentRoute(consultantId: String) = "appointment/$consultantId"
     fun chatScreen2Route(consultantId: String) = "chat_screen_2/$consultantId"
-
 }
 
 @Composable
@@ -51,13 +44,10 @@ fun MasakinNavGraph(
     navController: NavHostController,
     onGoogleClick: () -> Unit
 ) {
-
     NavHost(
         navController = navController,
         startDestination = Routes.ONBOARDING
     ) {
-
-        // ================== ONBOARDING ==================
         composable(Routes.ONBOARDING) {
             OnboardingRoute(
                 onFinish = {
@@ -68,7 +58,6 @@ fun MasakinNavGraph(
             )
         }
 
-        // ================== LOGIN ==================
         composable(Routes.LOGIN) {
             LoginScreen(
                 onLoginClick = { _, _ ->
@@ -84,7 +73,6 @@ fun MasakinNavGraph(
             )
         }
 
-        // ================== REGISTER ==================
         composable(Routes.REGISTER) {
             RegisterScreen(
                 onRegisterClick = { _, _, _ ->
@@ -97,7 +85,6 @@ fun MasakinNavGraph(
             )
         }
 
-        // ================== HOME + NAVBAR ==================
         composable(Routes.HOME) {
             HomeScreen(
                 onOpenChatbot = { navController.navigate(Routes.CHATBOT) },
@@ -105,8 +92,6 @@ fun MasakinNavGraph(
                 onOpenCommunity = { navController.navigate(Routes.COMMUNITY) },
                 onOpenMart = { navController.navigate(Routes.MART) },
                 onOpenConsultation = { navController.navigate(Routes.CONSULTATION) },
-
-                // Navigasi ke Chat List saat tombol Chat di Navbar Home ditekan
                 onOpenChat = {
                     navController.navigate(Routes.CHAT) {
                         launchSingleTop = true
@@ -118,15 +103,12 @@ fun MasakinNavGraph(
             )
         }
 
-        // ================== BOTTOM NAVBAR HALAMAN ==================
-
-        // UPDATE: Routes.CHAT sekarang mengarah ke ChatListScreen
         composable(Routes.CHAT) {
             ChatListScreen(
                 onNavigateToHome = {
                     navController.navigate(Routes.HOME) {
                         launchSingleTop = true
-                        popUpTo(Routes.HOME) { inclusive = true } // Kembali ke home utama
+                        popUpTo(Routes.HOME) { inclusive = true }
                     }
                 },
                 onNavigateToMyFood = {
@@ -142,7 +124,6 @@ fun MasakinNavGraph(
                     }
                 },
                 onNavigateToChatDetail = { consultantId ->
-                    // Membuka ChatScreen2 milik Dokter Trini
                     navController.navigate(Routes.chatScreen2Route(consultantId))
                 }
             )
@@ -202,9 +183,10 @@ fun MasakinNavGraph(
             )
         }
 
-        // ================== FITUR ==================
         composable(Routes.MART) {
-            MartNavGraph()
+            MartNavGraph(
+                onBackToHome = { navController.popBackStack() }
+            )
         }
 
         composable(Routes.CHATBOT) {
@@ -221,6 +203,7 @@ fun MasakinNavGraph(
                 }
             )
         }
+
         composable(
             route = Routes.RECIPE_DETAIL,
             arguments = listOf(navArgument("recipeId") { type = NavType.StringType })
