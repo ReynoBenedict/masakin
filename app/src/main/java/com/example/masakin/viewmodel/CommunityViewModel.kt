@@ -4,7 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.masakin.data.model.Post
 import com.example.masakin.data.repository.CommunityRepository
-import com.example.masakin.data.repository.FakeCommunityRepository
+import com.example.masakin.data.repository.FirestoreCommunityRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
@@ -12,14 +12,14 @@ import kotlinx.coroutines.launch
 
 data class CommunityUiState(
     val loading: Boolean = false,
-    val selectedTab: Int = 0, // 0=recommended, 1=recent
+    val selectedTab: Int = 0, // nol = recommended, satu = recent
     val recommended: List<Post> = emptyList(),
     val recent: List<Post> = emptyList(),
     val error: String? = null
 )
 
 class CommunityViewModel(
-    private val repo: CommunityRepository = FakeCommunityRepository()
+    private val repo: CommunityRepository = FirestoreCommunityRepository()
 ) : ViewModel() {
 
     private val _ui = MutableStateFlow(CommunityUiState(loading = true))
@@ -47,9 +47,44 @@ class CommunityViewModel(
     }
 
     fun like(postId: String) {
-        _ui.update {
-            val list = currentList(it).map { p -> if (p.id == postId) p.copy(likes = p.likes + 1) else p }
-            it.updateCurrentList(list)
+        // optimistik update di UI
+        _ui.update { state ->
+            val list = currentList(state).map { p ->
+                if (p.id == postId) p.copy(likes = p.likes + 1) else p
+            }
+            state.updateCurrentList(list)
+        }
+
+        // sync ke firestore
+        viewModelScope.launch {
+            runCatching { repo.likePost(postId) }
+        }
+    }
+
+    // fungsi baru untuk membuat post
+    fun createPost(
+        userName: String,
+        userHandle: String,
+        userAvatarUrl: String,
+        content: String,
+        onFinish: (() -> Unit)? = null
+    ) {
+        viewModelScope.launch {
+            _ui.update { it.copy(loading = true, error = null) }
+            runCatching {
+                repo.createPost(
+                    userName = userName,
+                    userHandle = userHandle,
+                    userAvatarUrl = userAvatarUrl,
+                    content = content
+                    // imageUrl dibiarkan null, jadi post teks
+                )
+            }.onSuccess {
+                refresh()
+                onFinish?.invoke()
+            }.onFailure { e ->
+                _ui.update { it.copy(loading = false, error = e.message) }
+            }
         }
     }
 
