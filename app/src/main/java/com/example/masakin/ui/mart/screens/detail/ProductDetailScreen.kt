@@ -1,6 +1,5 @@
 package com.example.masakin.ui.mart.screens.detail
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -21,15 +20,17 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import coil.compose.AsyncImage
+import coil.request.ImageRequest
 import com.example.masakin.R
 import com.example.masakin.ui.mart.components.RelatedRecipeCard
-import com.example.masakin.ui.mart.data.Product
 import com.example.masakin.ui.mart.viewmodel.MartViewModel
 import kotlinx.coroutines.launch
 import java.text.NumberFormat
@@ -77,7 +78,7 @@ fun ProductDetailScreen(
                     }
                 },
                 actions = {
-                    IconButton(onClick = { /* Menu */ }) {
+                    IconButton(onClick = { }) {
                         Icon(Icons.Default.MoreVert, contentDescription = "Menu")
                     }
                 },
@@ -92,7 +93,7 @@ fun ProductDetailScreen(
                         snackbarHostState.showSnackbar("Produk berhasil dimasukkan ke Cart!")
                     }
                 },
-                onChatClick = { /* Chat */ },
+                onChatClick = { },
                 onCartClick = onCartClick
             )
         },
@@ -108,17 +109,14 @@ fun ProductDetailScreen(
             item {
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Nutrition & Image Row
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    // Nutrition Info (Left side - 2 Columns)
                     Row(
                         modifier = Modifier.weight(1f),
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        // Col 1
                         Column {
                             NutritionItemV(label = "Calories", value = "${product.nutrition.calories}", unit = "kcal", icon = "🔥")
                             Spacer(modifier = Modifier.height(16.dp))
@@ -126,7 +124,6 @@ fun ProductDetailScreen(
                             Spacer(modifier = Modifier.height(16.dp))
                             NutritionItemV(label = "Fiber", value = "${product.nutrition.fiber}", unit = "g", icon = "🥦")
                         }
-                        // Col 2
                         Column {
                             NutritionItemV(label = "Water", value = "${product.nutrition.water}", unit = "", icon = "💧")
                             Spacer(modifier = Modifier.height(16.dp))
@@ -138,9 +135,11 @@ fun ProductDetailScreen(
 
                     Spacer(modifier = Modifier.width(16.dp))
 
-                    // Image (Right side)
-                    Image(
-                        painter = painterResource(id = product.image),
+                    AsyncImage(
+                        model = ImageRequest.Builder(LocalContext.current)
+                            .data(product.imageUrl)
+                            .crossfade(true)
+                            .build(),
                         contentDescription = product.name,
                         contentScale = ContentScale.Crop,
                         modifier = Modifier
@@ -151,16 +150,14 @@ fun ProductDetailScreen(
 
                 Spacer(modifier = Modifier.height(24.dp))
 
-                // Price & Store Info
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.Top
                 ) {
-                    // Store Info
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(
-                            painter = painterResource(id = R.drawable.mart_ic_cat_daging), // Placeholder store icon
+                            painter = painterResource(id = R.drawable.mart_ic_cat_daging),
                             contentDescription = "Store",
                             modifier = Modifier.size(20.dp),
                             tint = Color(0xFFD32F2F)
@@ -173,7 +170,6 @@ fun ProductDetailScreen(
                         )
                     }
 
-                    // Price Info
                     Column(horizontalAlignment = Alignment.End) {
                         Text(
                             text = formatRupiah(product.price),
@@ -191,7 +187,6 @@ fun ProductDetailScreen(
 
                 HorizontalDivider(modifier = Modifier.padding(vertical = 20.dp), color = Color(0xFFF3F4F6))
 
-                // Description
                 Text(
                     text = "Deskripsi",
                     fontSize = 16.sp,
@@ -209,7 +204,6 @@ fun ProductDetailScreen(
 
                 Spacer(modifier = Modifier.height(24.dp))
 
-                // Related Recipes Title
                 Text(
                     text = "Related Recipes",
                     fontSize = 16.sp,
@@ -219,7 +213,6 @@ fun ProductDetailScreen(
                 Spacer(modifier = Modifier.height(12.dp))
             }
 
-            // Related Recipes Grid (Chunked rows)
             items(product.relatedRecipes.chunked(2)) { rowItems ->
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -228,11 +221,10 @@ fun ProductDetailScreen(
                     for (recipe in rowItems) {
                         RelatedRecipeCard(
                             recipe = recipe,
-                            onClick = { /* Open recipe */ },
+                            onClick = { },
                             modifier = Modifier.weight(1f)
                         )
                     }
-                    // Fill empty space if odd number of items
                     if (rowItems.size < 2) {
                         Spacer(modifier = Modifier.weight(1f))
                     }
@@ -242,7 +234,7 @@ fun ProductDetailScreen(
             
             item {
                  Row(
-                    modifier = Modifier.fillMaxWidth().clickable { /* See more */ },
+                    modifier = Modifier.fillMaxWidth().clickable { },
                     horizontalArrangement = Arrangement.End,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
@@ -253,7 +245,7 @@ fun ProductDetailScreen(
                         fontSize = 14.sp
                     )
                     Icon(
-                        imageVector = Icons.AutoMirrored.Filled.ArrowBack, // Should be forward arrow, but using back mirrored
+                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                         contentDescription = null,
                         tint = Color(0xFFD32F2F),
                         modifier = Modifier.size(16.dp).rotate(180f)
@@ -280,7 +272,6 @@ fun BottomBar(
                 .padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Chat Button
             IconButton(
                 onClick = onChatClick,
                 modifier = Modifier
@@ -294,7 +285,6 @@ fun BottomBar(
                 )
             }
             
-            // Vertical Divider
             Spacer(modifier = Modifier.width(12.dp))
             Box(
                 modifier = Modifier
@@ -304,11 +294,9 @@ fun BottomBar(
             )
             Spacer(modifier = Modifier.width(12.dp))
 
-            // Cart Button
             IconButton(
                 onClick = onCartClick,
-                modifier = Modifier
-                    .size(48.dp)
+                modifier = Modifier.size(48.dp)
             ) {
                 Icon(
                     imageVector = Icons.Default.ShoppingCart,
@@ -320,9 +308,8 @@ fun BottomBar(
 
             Spacer(modifier = Modifier.width(12.dp))
 
-            // Buy Button
             Button(
-                onClick = { /* Buy Now - Coming Soon */ },
+                onClick = { },
                 modifier = Modifier
                     .weight(1f)
                     .height(48.dp),
@@ -368,7 +355,6 @@ private fun formatRupiah(amount: Int): String {
     return numberFormat.format(amount).replace("Rp", "Rp ")
 }
 
-// Extension for rotation
 fun Modifier.rotate(degrees: Float) = this.then(
     Modifier.graphicsLayer(rotationZ = degrees)
 )

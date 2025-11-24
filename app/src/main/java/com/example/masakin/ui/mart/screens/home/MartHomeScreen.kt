@@ -37,6 +37,7 @@ fun MartHomeScreen(
     onCartClick: () -> Unit,
     onOrderClick: () -> Unit,
     onFavoriteClick: () -> Unit,
+    onBackToHome: () -> Unit = {},
     viewModel: MartViewModel = viewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -44,6 +45,13 @@ fun MartHomeScreen(
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
     val listState = rememberLazyListState()
+    
+    // Fetch initial location when screen loads
+    LaunchedEffect(Unit) {
+        val fusedLocationClient = LocationServices.getFusedLocationProviderClient(context)
+        viewModel.requestLocationUpdate(context, fusedLocationClient)
+    }
+
     
     // Track category section positions
     val categoryPositions = remember { mutableStateMapOf<ProductCategory, Int>() }
@@ -130,7 +138,7 @@ fun MartHomeScreen(
                                 viewModel.requestLocationUpdate(context, client)
                             },
                             onNotificationClick = { /* Handle notification */ },
-                            onBackClick = { /* Handle back if needed */ }
+                            onBackClick = onBackToHome
                         )
                         Spacer(Modifier.height(16.dp))
                         MartMenuButtons(

@@ -13,7 +13,7 @@ data class MartUiState(
     val cartItems: List<CartItem> = emptyList(),
     val selectedCategory: ProductCategory? = null,
     val searchQuery: String = "",
-    val deliveryAddress: String = "",
+    val deliveryAddress: String = "Loading location...",
     // Checkout related selections
     val selectedShipping: ShippingMethod? = null,
     val selectedPayment: PaymentMethod? = null,

@@ -8,7 +8,6 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import com.example.masakin.ui.mart.data.ProductCategory
 import com.example.masakin.ui.mart.screens.cart.CartScreen
 import com.example.masakin.ui.mart.screens.checkout.CheckoutScreen
 import com.example.masakin.ui.mart.screens.home.MartHomeScreen
@@ -20,7 +19,8 @@ import com.example.masakin.ui.mart.viewmodel.MartViewModel
 @Composable
 fun MartNavGraph(
     navController: NavHostController = rememberNavController(),
-    viewModel: MartViewModel = viewModel()
+    viewModel: MartViewModel = viewModel(),
+    onBackToHome: () -> Unit = {}
 ) {
     NavHost(
         navController = navController,
@@ -31,16 +31,15 @@ fun MartNavGraph(
                 onProductClick = { productId ->
                     navController.navigate(MartRoute.Detail.createRoute(productId))
                 },
-                onCategoryClick = { category ->
-                    // Categories scroll on home screen, handled internally
-                },
+                onCategoryClick = { },
                 onCartClick = {
                     navController.navigate(MartRoute.Cart.route)
                 },
                 onOrderClick = { 
                     navController.navigate(MartRoute.Order.route)
                 },
-                onFavoriteClick = { /* Navigate to Favorites if exists */ },
+                onFavoriteClick = { },
+                onBackToHome = onBackToHome,
                 viewModel = viewModel
             )
         }
