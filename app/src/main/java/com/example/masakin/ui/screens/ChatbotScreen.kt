@@ -1,5 +1,10 @@
 package com.example.masakin.ui.screens
 
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -16,17 +21,20 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.masakin.ui.chat.ChatbotViewModel
 import com.example.masakin.ui.chat.Sender
 import com.example.masakin.ui.chat.UiMessage
+import com.example.masakin.ui.chat.masakinMarkdown
 import com.example.masakin.ui.theme.Black
 import com.example.masakin.ui.theme.Red50
 
-// ====== HARDCODED API KEY (dev only) ======
+// DEV ONLY
 private const val API_KEY =
     "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"
 
@@ -35,12 +43,14 @@ private const val API_KEY =
 fun ChatbotScreen(onBack: () -> Unit = {}) {
     val vm: ChatbotViewModel = viewModel()
     val messages by vm.messages.collectAsState()
+    val isLoading by vm.isLoading.collectAsState()
     var input by remember { mutableStateOf("") }
 
-    // state untuk list + auto-scroll ke bawah saat ada pesan baru
     val listState = rememberLazyListState()
-    LaunchedEffect(messages.size) {
-        if (messages.isNotEmpty()) listState.animateScrollToItem(messages.lastIndex)
+    LaunchedEffect(messages.size, isLoading) {
+        if (messages.isNotEmpty()) {
+            listState.animateScrollToItem(messages.lastIndex)
+        }
     }
 
     Scaffold(
@@ -54,12 +64,11 @@ fun ChatbotScreen(onBack: () -> Unit = {}) {
                 }
             )
         },
-        // ⬇️ Input bar sticky di bawah & ikut naik saat keyboard tampil
         bottomBar = {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .imePadding()                 // naik mengikuti keyboard
+                    .imePadding()
                     .navigationBarsPadding()
                     .padding(20.dp)
                     .height(56.dp)
@@ -74,7 +83,7 @@ fun ChatbotScreen(onBack: () -> Unit = {}) {
                     modifier = Modifier
                         .weight(1f)
                         .padding(start = 16.dp),
-                    textStyle = LocalTextStyle.current.copy(fontSize = 12.sp),
+                    textStyle = TextStyle(fontSize = 12.sp),
                     colors = TextFieldDefaults.colors(
                         focusedIndicatorColor = Color.Transparent,
                         unfocusedIndicatorColor = Color.Transparent,
@@ -83,7 +92,7 @@ fun ChatbotScreen(onBack: () -> Unit = {}) {
                         cursorColor = Red50
                     )
                 )
-                IconButton(onClick = { /* future: voice */ }) {
+                IconButton(onClick = { }) {
                     Icon(Icons.Filled.MicNone, contentDescription = "Mic", tint = Color.Gray)
                 }
                 FilledIconButton(
@@ -102,7 +111,6 @@ fun ChatbotScreen(onBack: () -> Unit = {}) {
             }
         }
     ) { inner ->
-        // Konten utama TIDAK diberi imePadding -> header & chat tetap sticky di atas
         LazyColumn(
             state = listState,
             modifier = Modifier
@@ -112,11 +120,20 @@ fun ChatbotScreen(onBack: () -> Unit = {}) {
             contentPadding = PaddingValues(top = 16.dp, bottom = 16.dp)
         ) {
             items(messages, key = { it.id }) { m ->
-                when (m.sender) {
-                    Sender.Bot, Sender.Error -> BotRow(m)
-                    Sender.User -> UserRow(m)
+                if (m.sender == Sender.User) {
+                    UserRow(m)
+                } else {
+                    BotRow(m)
                 }
                 Spacer(Modifier.height(10.dp))
+            }
+
+            // loading indicator (3 dots) saat masih nunggu API
+            if (isLoading) {
+                item {
+                    TypingIndicatorRow()
+                    Spacer(Modifier.height(10.dp))
+                }
             }
         }
     }
@@ -132,10 +149,12 @@ private fun BotRow(m: UiMessage) {
                 .background(Red50.copy(alpha = 0.15f)),
             contentAlignment = Alignment.Center
         ) { Text(if (m.sender == Sender.Error) "⚠️" else "🤖", fontSize = 12.sp) }
+
         Spacer(Modifier.width(8.dp))
+
         Surface(color = Color(0xFFF6F6F8), shape = RoundedCornerShape(14.dp)) {
             Text(
-                m.text,
+                text = masakinMarkdown(m.text),
                 modifier = Modifier.padding(14.dp),
                 fontSize = 14.sp,
                 color = Color.Black.copy(alpha = 0.9f)
@@ -154,6 +173,59 @@ private fun UserRow(m: UiMessage) {
                 fontSize = 14.sp,
                 color = Color.Black.copy(alpha = 0.9f)
             )
+        }
+    }
+}
+
+/**
+ * 3-dot linear loading indicator (bot typing...)
+ */
+@Composable
+private fun TypingIndicatorRow() {
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Box(
+            modifier = Modifier
+                .size(28.dp)
+                .clip(CircleShape)
+                .background(Red50.copy(alpha = 0.15f)),
+            contentAlignment = Alignment.Center
+        ) {
+            Text("🤖", fontSize = 12.sp)
+        }
+
+        Spacer(Modifier.width(8.dp))
+
+        Surface(
+            color = Color(0xFFF6F6F8),
+            shape = RoundedCornerShape(14.dp)
+        ) {
+            Row(
+                modifier = Modifier
+                    .padding(horizontal = 14.dp, vertical = 10.dp),
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                val transition = rememberInfiniteTransition(label = "typingDots")
+                repeat(3) { index ->
+                    val alpha = transition.animateFloat(
+                        initialValue = 0.3f,
+                        targetValue = 1f,
+                        animationSpec = infiniteRepeatable(
+                            animation = tween(durationMillis = 600, delayMillis = index * 150),
+                            repeatMode = RepeatMode.Reverse
+                        ),
+                        label = "dot$index"
+                    ).value
+
+                    Box(
+                        modifier = Modifier
+                            .size(6.dp)
+                            .clip(CircleShape)
+                            .background(Color.Gray)
+                            .alpha(alpha)
+                    )
+                }
+            }
         }
     }
 }
