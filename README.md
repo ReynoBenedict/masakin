@@ -27,13 +27,6 @@ Proyek ini dibangun menggunakan teknologi berikut:
   * **Arsitektur:** MVVM
   * **Database:** RFirebase
 
-## 📞 Kontak
-
-Jika ada pertanyaan atau saran, silakan hubungi:
-
-  * **GitHub:** [Ndonnnnn7](https://www.google.com/search?q=https://github.com/Ndonnnnn7)
-  * **Email:** (Masukkan email kamu jika berkenan)
-
 -----
 
 *Dibuat dengan ❤️ oleh Tim Masakin*
